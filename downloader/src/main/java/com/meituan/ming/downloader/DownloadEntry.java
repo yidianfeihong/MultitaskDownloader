@@ -15,7 +15,7 @@ public class DownloadEntry implements Serializable {
     public double totalLength;
     public DownloadStatus status = DownloadStatus.idle;
 
-    public enum DownloadStatus {idle, waiting, downloading, paused, resume, cancel, completed}
+    public enum DownloadStatus {idle, waiting, downloading, paused, resumed, cancelled, completed}
 
 
     public DownloadEntry() {

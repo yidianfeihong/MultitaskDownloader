@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void notifyUpdate(DownloadEntry entry) {
             mDownloadEntry = entry;
-            if (entry.status.equals(DownloadEntry.DownloadStatus.cancel)) {
+            if (entry.status.equals(DownloadEntry.DownloadStatus.cancelled)) {
                 mDownloadEntry = null;
             }
             Trace.e(entry.toString());

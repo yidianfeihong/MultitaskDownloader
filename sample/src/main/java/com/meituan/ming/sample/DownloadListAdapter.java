@@ -22,7 +22,7 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
 
     private List<DownloadEntry> mDownloadEntries;
     private DownloadManager mDownloadManager;
-    private DecimalFormat df = new DecimalFormat("0.0");
+    private DecimalFormat df;
 
     public DownloadListAdapter(List<DownloadEntry> downloadEntries, DownloadManager downloadManager) {
         mDownloadEntries = downloadEntries;
@@ -50,7 +50,7 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
             public void onClick(View v) {
                 if (downloadEntry.status == DownloadEntry.DownloadStatus.idle) {
                     mDownloadManager.add(downloadEntry);
-                } else if (downloadEntry.status == DownloadEntry.DownloadStatus.downloading) {
+                } else if (downloadEntry.status == DownloadEntry.DownloadStatus.downloading || downloadEntry.status == DownloadEntry.DownloadStatus.waiting) {
                     mDownloadManager.pause(downloadEntry);
                 } else if (downloadEntry.status == DownloadEntry.DownloadStatus.paused) {
                     mDownloadManager.resume(downloadEntry);
@@ -84,7 +84,7 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
     }
 
     public String formateDownloadPercent(double currentLength, double totalLength) {
-        DecimalFormat df = new DecimalFormat("0.0");
+        df = new DecimalFormat("0.0");
         return df.format(currentLength / 1024) + "M" + " | " + df.format(totalLength / 1024) + "M";
     }
 

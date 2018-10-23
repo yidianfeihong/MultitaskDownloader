@@ -29,7 +29,7 @@ public class DownloadTask implements Runnable {
                 e.printStackTrace();
             }
             if (isPaused || isCanceled) {
-                mDownloadEntry.status = isPaused ? DownloadEntry.DownloadStatus.paused : DownloadEntry.DownloadStatus.cancel;
+                mDownloadEntry.status = isPaused ? DownloadEntry.DownloadStatus.paused : DownloadEntry.DownloadStatus.cancelled;
                 update(mDownloadEntry);
                 return;
             }
