@@ -7,7 +7,9 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,16 +23,20 @@ public class DownloadService extends Service {
     private ExecutorService mExecutors;
     private LinkedBlockingQueue<DownloadEntry> mWaitingQueue;
 
+    public static final int NOTIFY_DOWNLOADING = 1;
+    public static final int NOTIFY_UPDATING = 2;
+    public static final int NOTIFY_PAUSED_OR_CANCELLED = 3;
+    public static final int NOTIFY_COMPLETED = 4;
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            DownloadEntry downloadEntry = (DownloadEntry) msg.obj;
-            switch (downloadEntry.status) {
-                case cancelled:
-                case paused:
-                case completed:
+            switch (msg.what) {
+                case NOTIFY_PAUSED_OR_CANCELLED:
+                case NOTIFY_COMPLETED:
                     checkNext();
+                    break;
             }
             DataChanger.getInstance().postStatus((DownloadEntry) msg.obj);
         }
@@ -38,7 +44,7 @@ public class DownloadService extends Service {
 
     private void checkNext() {
         DownloadEntry downloadEntry = mWaitingQueue.poll();
-        if(downloadEntry!=null){
+        if (downloadEntry != null) {
             startDownload(downloadEntry);
         }
     }
@@ -80,6 +86,37 @@ public class DownloadService extends Service {
             case Constants.KEY_DOWNLOAD_ACTION_CANCEL:
                 cancelDownload(entry);
                 break;
+
+            case Constants.KEY_DOWNLOAD_ACTION_PAUSE_ALL:
+                pauseAll();
+                break;
+            case Constants.KEY_DOWNLOAD_ACTION_RECOVER_ALL:
+                recoverAll();
+                break;
+
+        }
+    }
+
+    private void recoverAll() {
+        ArrayList<DownloadEntry>recoverableEntries = DataChanger.getInstance().queryAllRecoverableEntries();
+        if (recoverableEntries != null) {
+            for (DownloadEntry downloadEntry:recoverableEntries){
+                addDownload(downloadEntry);
+            }
+        }
+    }
+
+    private void pauseAll() {
+
+        for (Map.Entry<String, DownloadTask> entry : mDownloadingTasks.entrySet()) {
+            DownloadTask downloadTask = entry.getValue();
+            downloadTask.pause();
+        }
+        mDownloadingTasks.clear();
+        while (mWaitingQueue.iterator().hasNext()) {
+            DownloadEntry downloadEntry = mWaitingQueue.poll();
+            downloadEntry.status = DownloadEntry.DownloadStatus.paused;
+            DataChanger.getInstance().postStatus(downloadEntry);
         }
     }
 
@@ -114,7 +151,7 @@ public class DownloadService extends Service {
     private void pauseDownload(DownloadEntry entry) {
         DownloadTask downloadTask = mDownloadingTasks.remove(entry.id);
         if (downloadTask != null) {
-            downloadTask.pause(entry);
+            downloadTask.pause();
         } else {
             mWaitingQueue.remove(entry);
             entry.status = DownloadEntry.DownloadStatus.paused;

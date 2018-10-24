@@ -4,6 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.meituan.ming.downloader.DataWatcher;
 import com.meituan.ming.downloader.DownloadEntry;
@@ -41,6 +43,28 @@ public class ListActivity extends AppCompatActivity {
         mDownloadManager = DownloadManager.getInstance(this);
         mRecyclerView = findViewById(R.id.download_list);
         setData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            if (item.getTitle().equals("pause all")) {
+                item.setTitle(R.string.action_recover_all);
+                mDownloadManager.pauseAll();
+            } else {
+                item.setTitle(R.string.action_pause_all);
+                mDownloadManager.recoverAll();
+            }
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void setData() {

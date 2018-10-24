@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">sample</string>
+    <string name="action_pause_all">pause all</string>
+    <string name="action_recover_all">recover all</string>
 </resources>

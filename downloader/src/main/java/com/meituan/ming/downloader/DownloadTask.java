@@ -9,8 +9,8 @@ import android.os.Message;
 public class DownloadTask implements Runnable {
     private Handler mHandler;
     private DownloadEntry mDownloadEntry;
-    private boolean isPaused;
-    private boolean isCanceled;
+    private volatile boolean isPaused;
+    private volatile boolean isCanceled;
     private Message mMsg;
 
     public DownloadTask(DownloadEntry entry, Handler handler) {
@@ -21,7 +21,7 @@ public class DownloadTask implements Runnable {
     public void start() {
         mDownloadEntry.status = DownloadEntry.DownloadStatus.downloading;
         mDownloadEntry.totalLength = 100 * 1024;
-        update(mDownloadEntry);
+        notifyUpdate(mDownloadEntry,DownloadService.NOTIFY_DOWNLOADING);
         for (int i = 0; i < mDownloadEntry.totalLength; i++) {
             try {
                 Thread.sleep(1000);
@@ -30,25 +30,26 @@ public class DownloadTask implements Runnable {
             }
             if (isPaused || isCanceled) {
                 mDownloadEntry.status = isPaused ? DownloadEntry.DownloadStatus.paused : DownloadEntry.DownloadStatus.cancelled;
-                update(mDownloadEntry);
+                notifyUpdate(mDownloadEntry,DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
                 return;
             }
             i += 1024;
             mDownloadEntry.currentLength += 1024;
-            update(mDownloadEntry);
+            notifyUpdate(mDownloadEntry,DownloadService.NOTIFY_UPDATING);
         }
         mDownloadEntry.status = DownloadEntry.DownloadStatus.completed;
-        update(mDownloadEntry);
+        notifyUpdate(mDownloadEntry,DownloadService.NOTIFY_COMPLETED);
 
     }
 
-    private void update(DownloadEntry entry) {
+    private void notifyUpdate(DownloadEntry entry,int what) {
         mMsg = mHandler.obtainMessage();
         mMsg.obj = entry;
+        mMsg.what = what;
         mHandler.sendMessage(mMsg);
     }
 
-    public void pause(DownloadEntry entry) {
+    public void pause() {
         isPaused = true;
         Trace.e("download paused");
     }
