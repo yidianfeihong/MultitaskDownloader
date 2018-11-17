@@ -10,12 +10,13 @@ public class DownloadManager {
 
     private static DownloadManager mInstance;
     private final Context mContext;
-    private static final int MIN_OPERATE_INTERVAL = 1000 * 1;
+    private static final int MIN_OPERATE_INTERVAL = 500 * 1;
     private long mLastOperatedTime = 0;
 
 
     private DownloadManager(Context context) {
         this.mContext = context;
+        mContext.startService(new Intent(context,DownloadService.class));
     }
 
     public synchronized static DownloadManager getInstance(Context context) {
@@ -92,11 +93,11 @@ public class DownloadManager {
     }
 
     public void addObserver(DataWatcher watcher) {
-        DataChanger.getInstance().addObserver(watcher);
+        DataChanger.getInstance(mContext).addObserver(watcher);
     }
 
     public void removeObserver(DataWatcher watcher) {
-        DataChanger.getInstance().deleteObserver(watcher);
+        DataChanger.getInstance(mContext).deleteObserver(watcher);
     }
 
 
@@ -107,7 +108,9 @@ public class DownloadManager {
             return true;
         }
         return false;
-
     }
 
+    public DownloadEntry queryDownloadEntry(String id) {
+        return DataChanger.getInstance(mContext).queryDownloadEntryById(id);
+    }
 }

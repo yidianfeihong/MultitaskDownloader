@@ -8,7 +8,7 @@ import android.util.Log;
 public class Trace {
 
     public static String TAG = "ming";
-    private static final boolean DEBUG = true;
+    public static final boolean DEBUG = true;
 
 
     public static void d(String msg) {

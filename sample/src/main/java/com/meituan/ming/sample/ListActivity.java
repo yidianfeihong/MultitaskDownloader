@@ -11,6 +11,7 @@ import com.meituan.ming.downloader.DataWatcher;
 import com.meituan.ming.downloader.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
 import com.meituan.ming.downloader.Trace;
+import com.meituan.ming.downloader.db.DBController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,8 +75,15 @@ public class ListActivity extends AppCompatActivity {
         mDownloadEntries.add(new DownloadEntry("http://api.stay4it.com/uploads/test3.jpg"));
         mDownloadEntries.add(new DownloadEntry("http://api.stay4it.com/uploads/test4.jpg"));
         mDownloadEntries.add(new DownloadEntry("http://api.stay4it.com/uploads/test5.jpg"));
-        mDownloadEntries.add(new DownloadEntry("http://api.stay4it.com/uploads/test0.jpg"));
+        mDownloadEntries.add(new DownloadEntry("http://api.stay4it.com/uploads/test6.jpg"));
 
+        for (int i = 0; i < mDownloadEntries.size(); i++) {
+            DownloadEntry entry = mDownloadEntries.get(i);
+            DownloadEntry realEntry = mDownloadManager.queryDownloadEntry(entry.id);
+            if (realEntry != null) {
+                mDownloadEntries.set(i, realEntry);
+            }
+        }
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new DownloadListAdapter(mDownloadEntries, mDownloadManager);

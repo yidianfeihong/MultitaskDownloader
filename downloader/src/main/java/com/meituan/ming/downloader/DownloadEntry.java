@@ -13,10 +13,10 @@ public class DownloadEntry implements Serializable {
 
     public double currentLength;
     public double totalLength;
+
     public DownloadStatus status = DownloadStatus.idle;
 
     public enum DownloadStatus {idle, waiting, downloading, paused, resumed, cancelled, completed}
-
 
     public DownloadEntry() {
     }
@@ -31,6 +31,10 @@ public class DownloadEntry implements Serializable {
     public String toString() {
         return "DownloadEntry: " + url + " is " + status.name() + " with " + currentLength + "/" + totalLength;
     }
+
+
+
+
 
     @Override
     public int hashCode() {

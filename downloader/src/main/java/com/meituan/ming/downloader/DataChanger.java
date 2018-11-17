@@ -1,5 +1,9 @@
 package com.meituan.ming.downloader;
 
+import android.content.Context;
+
+import com.meituan.ming.downloader.db.DBController;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,22 +14,25 @@ import java.util.Observable;
  */
 public class DataChanger extends Observable {
 
-    public static DataChanger mInstance = null;
+    public static DataChanger mInstance ;
+    private Context mContext;
     private LinkedHashMap<String, DownloadEntry> mOperatedEntries;
 
-    private DataChanger() {
+    private DataChanger(Context context) {
+        mContext = context;
         mOperatedEntries = new LinkedHashMap<>();
     }
 
-    public static DataChanger getInstance() {
+    public static DataChanger getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new DataChanger();
+            mInstance = new DataChanger(context);
         }
         return mInstance;
     }
 
     public void postStatus(DownloadEntry entry) {
         mOperatedEntries.put(entry.id, entry);
+        DBController.getInstance(mContext).newOrUpdate(entry);
         setChanged();
         notifyObservers(entry);
     }
@@ -41,5 +48,14 @@ public class DataChanger extends Observable {
             }
         }
         return recoverableEntries;
+    }
+
+
+    public DownloadEntry queryDownloadEntryById(String id) {
+        return mOperatedEntries.get(id);
+    }
+
+    public void addToOperatedEntryMap(String key, DownloadEntry value){
+        mOperatedEntries.put(key, value);
     }
 }
