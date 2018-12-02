@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.meituan.ming.downloader.db.DBController;
 
@@ -29,6 +30,8 @@ public class DownloadService extends Service {
     public static final int NOTIFY_UPDATING = 2;
     public static final int NOTIFY_PAUSED_OR_CANCELLED = 3;
     public static final int NOTIFY_COMPLETED = 4;
+    public static final int NOTIFY_CONNECTING = 5;
+    public static final int NOTIFY_ERROR = 6;
 
     private DataChanger mDataChanger;
     private DBController mDBController;
@@ -40,8 +43,10 @@ public class DownloadService extends Service {
             switch (msg.what) {
                 case NOTIFY_PAUSED_OR_CANCELLED:
                 case NOTIFY_COMPLETED:
+                case NOTIFY_ERROR:
                     checkNext();
                     break;
+
             }
             mDataChanger.postStatus((DownloadEntry) msg.obj);
         }
@@ -69,8 +74,7 @@ public class DownloadService extends Service {
         mDBController = DBController.getInstance(getApplicationContext());
         ArrayList<DownloadEntry> downloadEntries = mDBController.queryAll();
         if (downloadEntries != null) {
-            for (DownloadEntry entry :
-                    downloadEntries) {
+            for (DownloadEntry entry : downloadEntries) {
                 if (entry.status.equals(DownloadEntry.DownloadStatus.downloading) || entry.status.equals(DownloadEntry.DownloadStatus.waiting)) {
                     entry.status = DownloadEntry.DownloadStatus.paused;
                     addDownload(entry);
@@ -82,9 +86,14 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        DownloadEntry entry = (DownloadEntry) intent.getSerializableExtra(Constants.KEY_DOWNLOAD_ENTRY);
-        int action = intent.getIntExtra(Constants.KEY_DOWNLOAD_ACTION, -1);
-        doAction(action, entry);
+        if (intent != null) {
+            DownloadEntry entry = (DownloadEntry) intent.getSerializableExtra(Constants.KEY_DOWNLOAD_ENTRY);
+            if (entry != null && mDataChanger.containsDownloadEntry(entry.id)) {
+                entry = mDataChanger.queryDownloadEntryById(entry.id);
+            }
+            int action = intent.getIntExtra(Constants.KEY_DOWNLOAD_ACTION, -1);
+            doAction(action, entry);
+        }
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -148,15 +157,15 @@ public class DownloadService extends Service {
     }
 
     private void startDownload(DownloadEntry entry) {
-        DownloadTask downloadTask = new DownloadTask(entry, mHandler);
+        DownloadTask downloadTask = new DownloadTask(entry, mHandler, mExecutors);
         mDownloadingTasks.put(entry.id, downloadTask);
-        mExecutors.execute(downloadTask);
+        downloadTask.start();
     }
 
     private void cancelDownload(DownloadEntry entry) {
         DownloadTask downloadTask = mDownloadingTasks.remove(entry.id);
         if (downloadTask != null) {
-            downloadTask.cancel(entry);
+            downloadTask.cancel();
         } else {
             mWaitingQueue.remove(entry);
             entry.status = DownloadEntry.DownloadStatus.cancelled;

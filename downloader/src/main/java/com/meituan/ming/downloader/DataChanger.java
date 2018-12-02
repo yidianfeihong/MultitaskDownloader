@@ -58,4 +58,10 @@ public class DataChanger extends Observable {
     public void addToOperatedEntryMap(String key, DownloadEntry value){
         mOperatedEntries.put(key, value);
     }
+
+    public boolean containsDownloadEntry(String id) {
+        return mOperatedEntries.containsKey(id);
+    }
+
+
 }

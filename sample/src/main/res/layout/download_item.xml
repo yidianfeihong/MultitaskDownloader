@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="70dp"
     android:orientation="horizontal">
@@ -21,8 +22,8 @@
     <RelativeLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:layout_toRightOf="@id/download_icon"
         android:layout_weight="1"
         android:orientation="vertical">
@@ -31,6 +32,8 @@
             android:id="@+id/download_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="抖音短视频"
             android:textColor="#000000"
             android:textSize="16sp" />
@@ -40,47 +43,51 @@
             style="@android:style/Widget.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:layout_below="@id/download_title"
-            android:layout_marginBottom="2dp"
-            android:layout_marginTop="2dp"
+            android:layout_centerVertical="true"
             android:max="100"
             android:progress="50"
             android:progressDrawable="@drawable/layer_progress_bg" />
 
-
-        <TextView
-            android:id="@+id/download_parcent"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:text="28.0M/56.0M" />
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/download_speed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:text="1M/s" />
+            <TextView
+                android:id="@+id/download_percent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="12sp"
+                tools:text="28.0M/56.0M | 50%" />
 
+            <Button
+                android:id="@+id/download_cancel"
+                android:layout_width="50dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="5dp"
+                android:background="@drawable/button_bg_selector"
+                android:gravity="center"
+                android:text="cancel"
+                android:textSize="10sp" />
+        </LinearLayout>
     </RelativeLayout>
 
-
     <FrameLayout
-        android:layout_width="wrap_content"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
         android:layout_alignParentRight="true"
         android:padding="10dp">
 
         <Button
-            android:id="@+id/download_status"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:id="@+id/download_button"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
             android:layout_gravity="center"
-            android:background="@drawable/download_button_bg"
-            android:text="下载"
-            android:textSize="14sp" />
+            android:background="@drawable/button_bg_selector"
+            android:textSize="10sp"
+            tools:text="download" />
     </FrameLayout>
 
 </LinearLayout>

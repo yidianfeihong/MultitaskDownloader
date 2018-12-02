@@ -24,9 +24,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void notifyUpdate(DownloadEntry entry) {
             mDownloadEntry = entry;
-            if (entry.status.equals(DownloadEntry.DownloadStatus.cancelled)) {
-                mDownloadEntry = null;
-            }
             Trace.e(entry.toString());
         }
     };
@@ -66,10 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
 
         if (mDownloadEntry == null) {
-            mDownloadEntry = new DownloadEntry();
-            mDownloadEntry.name = "test.jpg";
-            mDownloadEntry.url = "http://api.stay4it.com/uploads/test.jpg";
-            mDownloadEntry.id = "1";
+            mDownloadEntry = new DownloadEntry("http://gdown.baidu.com/data/wisegame/31ce1b54da062ae0/aiqiyi_81190.apk");
         }
 
         switch (v.getId()) {

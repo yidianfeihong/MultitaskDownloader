@@ -16,7 +16,7 @@ public class DownloadManager {
 
     private DownloadManager(Context context) {
         this.mContext = context;
-        mContext.startService(new Intent(context,DownloadService.class));
+        mContext.startService(new Intent(context, DownloadService.class));
     }
 
     public synchronized static DownloadManager getInstance(Context context) {
@@ -112,5 +112,12 @@ public class DownloadManager {
 
     public DownloadEntry queryDownloadEntry(String id) {
         return DataChanger.getInstance(mContext).queryDownloadEntryById(id);
+    }
+
+    public void reDownload(DownloadEntry downloadEntry) {
+        if (!checkIfExecutable())
+            return;
+        downloadEntry.reset();
+        add(downloadEntry);
     }
 }
