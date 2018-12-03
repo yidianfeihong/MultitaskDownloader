@@ -35,7 +35,7 @@ public class ConnectThread implements Runnable {
             isRunning = false;
         } catch (Exception e) {
             isRunning = false;
-            mListener.onError(e.getMessage());
+            mListener.onConnectError(e.getMessage());
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -54,7 +54,7 @@ public class ConnectThread implements Runnable {
 
         void onConnected(boolean isSupportRange, int totalLenth);
 
-        void onError(String message);
+        void onConnectError(String message);
     }
 
 }

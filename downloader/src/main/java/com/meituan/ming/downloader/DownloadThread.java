@@ -22,6 +22,7 @@ public class DownloadThread implements Runnable {
     private Downloadlistener listener;
     private volatile boolean isCanceled;
     private volatile boolean isPaused;
+    private volatile boolean isError;
 
     public DownloadThread(String url, int index, int startPos, int endPos, Downloadlistener listener) {
         this.url = url;
@@ -53,7 +54,7 @@ public class DownloadThread implements Runnable {
                 byte[] buff = new byte[2048];
                 int len;
                 while ((len = in.read(buff)) != -1) {
-                    if (isPaused || isCanceled) {
+                    if (isPaused || isCanceled || isError) {
                         break;
                     }
                     raf.write(buff, 0, len);
@@ -68,6 +69,9 @@ public class DownloadThread implements Runnable {
             } else if (isCanceled) {
                 mStatus = DownloadEntry.DownloadStatus.cancelled;
                 listener.onDownloadCanceled(index);
+            } else if (isError) {
+                mStatus = DownloadEntry.DownloadStatus.error;
+                listener.onDownloadError(index, "cancel manually by error");
             } else {
                 mStatus = DownloadEntry.DownloadStatus.completed;
                 listener.onDownloadCompleted(index);
@@ -79,9 +83,10 @@ public class DownloadThread implements Runnable {
             } else if (isCanceled) {
                 mStatus = DownloadEntry.DownloadStatus.cancelled;
                 listener.onDownloadCanceled(index);
-            } else
+            } else {
                 mStatus = DownloadEntry.DownloadStatus.error;
-            listener.onDownloadError(e.getMessage());
+                listener.onDownloadError(index, e.getMessage());
+            }
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -111,6 +116,15 @@ public class DownloadThread implements Runnable {
         Thread.currentThread().interrupt();
     }
 
+    public boolean isError() {
+        return mStatus == DownloadEntry.DownloadStatus.error;
+    }
+
+    public void cancelByError() {
+        isError = true;
+        Thread.currentThread().interrupt();
+    }
+
 
     interface Downloadlistener {
 
@@ -118,7 +132,7 @@ public class DownloadThread implements Runnable {
 
         void onDownloadCompleted(int index);
 
-        void onDownloadError(String message);
+        void onDownloadError(int index, String message);
 
         void onDownloadPaused(int index);
 
