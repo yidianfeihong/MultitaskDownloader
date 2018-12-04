@@ -164,15 +164,6 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
             int percent = (int) (mDownloadEntry.currentLength * 100l / mDownloadEntry.totalLength);
             if (percent > mDownloadEntry.percent) {
                 mDownloadEntry.percent = percent;
-<<<<<<< HEAD
-=======
-                int total = 0;
-                for (int i = 0; i < mDownloadEntry.ranges.size(); i++) {
-                    total += mDownloadEntry.ranges.get(i);
-                }
-                int curr = mDownloadEntry.currentLength;
-                boolean isEqual = curr == total;
->>>>>>> cebb6674272c70d30a54c54cb8caae3533d1d16d
                 notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
             }
         }
