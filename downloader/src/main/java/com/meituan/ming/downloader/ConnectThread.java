@@ -21,17 +21,21 @@ public class ConnectThread implements Runnable {
         try {
             URL url = new URL(mUrl);
             connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("Range", "bytes=0-" + Integer.MAX_VALUE);
             connection.setConnectTimeout(Constants.CONNECTTIMEOUT);
             connection.setReadTimeout(Constants.READTIMEOUT);
             connection.setRequestMethod("GET");
             int code = connection.getResponseCode();
             int length = connection.getContentLength();
             boolean isSupportRange = false;
-            if (code == HttpURLConnection.HTTP_PARTIAL) {
-                isSupportRange = true;
+            if (code == HttpURLConnection.HTTP_OK) {
+                String ranges = connection.getHeaderField("Accept-Range");
+                if ("bytes".equals(ranges)) {
+                    isSupportRange = true;
+                }
+                mListener.onConnected(isSupportRange, length);
+            } else {
+                mListener.onConnectError("server error:" + code);
             }
-            mListener.onConnected(isSupportRange, length);
             isRunning = false;
         } catch (Exception e) {
             isRunning = false;

@@ -20,14 +20,14 @@ public class DownloadThread implements Runnable {
     private String path;
     private String url;
     private DownloadEntry.DownloadStatus mStatus;
-    private Downloadlistener listener;
+    private DownloadListener listener;
     private volatile boolean isCanceled;
     private volatile boolean isPaused;
     private volatile boolean isError;
 
     private boolean isSingleDownload;
 
-    public DownloadThread(String url, int index, int startPos, int endPos, Downloadlistener listener) {
+    public DownloadThread(String url, int index, int startPos, int endPos, DownloadListener listener) {
         this.url = url;
         this.index = index;
         this.startPos = startPos;
@@ -77,7 +77,7 @@ public class DownloadThread implements Runnable {
                 byte[] buff = new byte[2048];
                 int len;
                 while ((len = in.read(buff)) != -1) {
-                    if (isPaused || isCanceled) {
+                    if (isPaused || isCanceled || isError) {
                         break;
                     }
                     fos.write(buff, 0, len);
@@ -85,6 +85,10 @@ public class DownloadThread implements Runnable {
                 }
                 fos.close();
                 in.close();
+            } else {
+                mStatus = DownloadEntry.DownloadStatus.error;
+                listener.onDownloadError(index, "server error:" + code);
+                return;
             }
             if (isPaused) {
                 mStatus = DownloadEntry.DownloadStatus.paused;
@@ -148,8 +152,12 @@ public class DownloadThread implements Runnable {
         Thread.currentThread().interrupt();
     }
 
+    public boolean isCompleted() {
+        return mStatus == DownloadEntry.DownloadStatus.completed;
+    }
 
-    interface Downloadlistener {
+
+    interface DownloadListener {
 
         void onProgressChanged(int index, int progress);
 

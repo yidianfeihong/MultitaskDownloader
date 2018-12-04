@@ -3,18 +3,15 @@ package com.meituan.ming.downloader;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.widget.Toast;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
  * Created by shiwenming on 2018/10/21.
  */
-public class DownloadTask implements ConnectThread.ConnectListener, DownloadThread.Downloadlistener {
+public class DownloadTask implements ConnectThread.ConnectListener, DownloadThread.DownloadListener {
     private Handler mHandler;
     private DownloadEntry mDownloadEntry;
     private volatile boolean isPaused;
@@ -45,7 +42,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     }
 
     private void startDownload() {
-        if (mDownloadEntry.isSupportRange) {
+        if (mDownloadEntry.isSupportRange && mDownloadEntry.totalLength > 0) {
             startMultiThreadDownload();
         } else {
             startSingleThreadDownload();
@@ -96,9 +93,9 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     }
 
     @Override
-    public void onConnected(boolean isSupportRange, int totalLenth) {
+    public void onConnected(boolean isSupportRange, int totalLength) {
         mDownloadEntry.isSupportRange = isSupportRange;
-        mDownloadEntry.totalLength = totalLenth;
+        mDownloadEntry.totalLength = totalLength;
         startDownload();
     }
 
@@ -151,17 +148,20 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
 
     @Override
     public synchronized void onProgressChanged(int index, int progress) {
-        if(mDownloadEntry.isSupportRange){
+        if (mDownloadEntry.isSupportRange) {
             int range = mDownloadEntry.ranges.get(index) + progress;
             mDownloadEntry.ranges.put(index, range);
         }
         mDownloadEntry.currentLength += progress;
-        if (mDownloadEntry.currentLength == mDownloadEntry.totalLength) {
-            mDownloadEntry.percent = 100;
-            mDownloadEntry.status = DownloadEntry.DownloadStatus.completed;
-            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_COMPLETED);
-        } else {
+        if (mDownloadEntry.totalLength > 0) {
             int percent = (int) (mDownloadEntry.currentLength * 100l / mDownloadEntry.totalLength);
+            if (percent > mDownloadEntry.percent) {
+                mDownloadEntry.percent = percent;
+                notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
+            }
+
+        } else {
+            int percent = mDownloadEntry.currentLength / 1024;
             if (percent > mDownloadEntry.percent) {
                 mDownloadEntry.percent = percent;
                 notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
@@ -171,6 +171,30 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
 
     @Override
     public synchronized void onDownloadCompleted(int index) {
+
+        for (int i = 0; i < mDownloadThreads.length; i++) {
+            if (mDownloadThreads[i] != null) {
+                if (!mDownloadThreads[i].isCompleted()) {
+                    return;
+                }
+            }
+        }
+        if (mDownloadEntry.totalLength > 0 && mDownloadEntry.currentLength != mDownloadEntry.totalLength) {
+            mDownloadEntry.status = DownloadEntry.DownloadStatus.error;
+            mDownloadEntry.reset();
+            String path = Environment.getExternalStorageDirectory() + File.separator + "Download" + File.separator + mDownloadEntry.name;
+            File file = new File(path);
+            if (file.exists()) {
+                file.delete();
+            }
+            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_ERROR);
+
+        } else {
+            mDownloadEntry.status = DownloadEntry.DownloadStatus.completed;
+            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_COMPLETED);
+
+        }
+
     }
 
     @Override
