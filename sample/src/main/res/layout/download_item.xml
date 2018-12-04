@@ -45,7 +45,8 @@
             android:layout_height="2dp"
             android:layout_centerVertical="true"
             android:max="100"
-            android:progress="50"
+            tools:progress="50"
+            android:focusable="false"
             android:progressDrawable="@drawable/layer_progress_bg" />
 
         <LinearLayout

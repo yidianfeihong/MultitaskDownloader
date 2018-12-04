@@ -115,8 +115,6 @@ public class DownloadManager {
     }
 
     public void reDownload(DownloadEntry downloadEntry) {
-        if (!checkIfExecutable())
-            return;
         downloadEntry.reset();
         add(downloadEntry);
     }

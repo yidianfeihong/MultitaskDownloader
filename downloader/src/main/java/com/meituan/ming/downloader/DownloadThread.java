@@ -3,6 +3,7 @@ package com.meituan.ming.downloader;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
@@ -22,12 +23,18 @@ public class DownloadThread implements Runnable {
     private Downloadlistener listener;
     private volatile boolean isCanceled;
     private volatile boolean isPaused;
+    private volatile boolean isError;
+
+    private boolean isSingleDownload;
 
     public DownloadThread(String url, int index, int startPos, int endPos, Downloadlistener listener) {
         this.url = url;
         this.index = index;
         this.startPos = startPos;
         this.endPos = endPos;
+        if (startPos == 0 && endPos == 0) {
+            isSingleDownload = true;
+        }
         this.path = Environment.getExternalStorageDirectory() + File.separator + "Download" + File.separator + url.substring(url.lastIndexOf("/") + 1);
         this.listener = listener;
     }
@@ -38,13 +45,16 @@ public class DownloadThread implements Runnable {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setRequestProperty("Range", "bytes=" + startPos + "-" + endPos);
+            if (!isSingleDownload) {
+                connection.setRequestProperty("Range", "bytes=" + startPos + "-" + endPos);
+            }
             connection.setConnectTimeout(Constants.CONNECTTIMEOUT);
             connection.setReadTimeout(Constants.READTIMEOUT);
             connection.setRequestMethod("GET");
             int code = connection.getResponseCode();
             File file = new File(path);
             RandomAccessFile raf;
+            FileOutputStream fos;
             InputStream in;
             if (code == HttpURLConnection.HTTP_PARTIAL) {
                 in = connection.getInputStream();
@@ -53,13 +63,27 @@ public class DownloadThread implements Runnable {
                 byte[] buff = new byte[2048];
                 int len;
                 while ((len = in.read(buff)) != -1) {
-                    if (isPaused || isCanceled) {
+                    if (isPaused || isCanceled || isError) {
                         break;
                     }
                     raf.write(buff, 0, len);
                     listener.onProgressChanged(index, len);
                 }
                 raf.close();
+                in.close();
+            } else if (code == HttpURLConnection.HTTP_OK) {
+                in = connection.getInputStream();
+                fos = new FileOutputStream(file);
+                byte[] buff = new byte[2048];
+                int len;
+                while ((len = in.read(buff)) != -1) {
+                    if (isPaused || isCanceled) {
+                        break;
+                    }
+                    fos.write(buff, 0, len);
+                    listener.onProgressChanged(index, len);
+                }
+                fos.close();
                 in.close();
             }
             if (isPaused) {
@@ -68,6 +92,9 @@ public class DownloadThread implements Runnable {
             } else if (isCanceled) {
                 mStatus = DownloadEntry.DownloadStatus.cancelled;
                 listener.onDownloadCanceled(index);
+            } else if (isError) {
+                mStatus = DownloadEntry.DownloadStatus.error;
+                listener.onDownloadError(index, "cancel manually by error");
             } else {
                 mStatus = DownloadEntry.DownloadStatus.completed;
                 listener.onDownloadCompleted(index);
@@ -79,9 +106,10 @@ public class DownloadThread implements Runnable {
             } else if (isCanceled) {
                 mStatus = DownloadEntry.DownloadStatus.cancelled;
                 listener.onDownloadCanceled(index);
-            } else
+            } else {
                 mStatus = DownloadEntry.DownloadStatus.error;
-            listener.onDownloadError(e.getMessage());
+                listener.onDownloadError(index, e.getMessage());
+            }
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -111,6 +139,15 @@ public class DownloadThread implements Runnable {
         Thread.currentThread().interrupt();
     }
 
+    public boolean isError() {
+        return mStatus == DownloadEntry.DownloadStatus.error;
+    }
+
+    public void cancelByError() {
+        isError = true;
+        Thread.currentThread().interrupt();
+    }
+
 
     interface Downloadlistener {
 
@@ -118,7 +155,7 @@ public class DownloadThread implements Runnable {
 
         void onDownloadCompleted(int index);
 
-        void onDownloadError(String message);
+        void onDownloadError(int index, String message);
 
         void onDownloadPaused(int index);
 

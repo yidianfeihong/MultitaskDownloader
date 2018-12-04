@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by shiwenming on 2018/10/23.
  */
-public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapter.DownloadItemViewHolder> {
+public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapter.DownloadItemViewHolder>{
 
     private List<DownloadEntry> mDownloadEntries;
     private DownloadManager mDownloadManager;
@@ -48,7 +48,6 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
             @Override
             public void onClick(View v) {
                 switch (downloadEntry.status) {
-
                     case idle:
                         mDownloadManager.add(downloadEntry);
                         break;

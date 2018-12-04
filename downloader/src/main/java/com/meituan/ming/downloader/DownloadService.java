@@ -112,7 +112,6 @@ public class DownloadService extends Service {
             case Constants.KEY_DOWNLOAD_ACTION_CANCEL:
                 cancelDownload(entry);
                 break;
-
             case Constants.KEY_DOWNLOAD_ACTION_PAUSE_ALL:
                 pauseAll();
                 break;
@@ -169,6 +168,7 @@ public class DownloadService extends Service {
         } else {
             mWaitingQueue.remove(entry);
             entry.status = DownloadEntry.DownloadStatus.cancelled;
+            entry.reset();
             mDataChanger.postStatus(entry);
         }
     }
