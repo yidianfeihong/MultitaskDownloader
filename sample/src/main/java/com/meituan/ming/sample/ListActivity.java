@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -31,7 +32,7 @@ public class ListActivity extends AppCompatActivity {
             if (index != -1) {
                 mDownloadEntries.remove(entry);
                 mDownloadEntries.add(index, entry);
-                mAdapter.notifyDataSetChanged();
+                mAdapter.notifyItemChanged(index);
             }
             Trace.e(entry.toString());
         }
@@ -44,6 +45,7 @@ public class ListActivity extends AppCompatActivity {
         mDownloadEntries = new ArrayList<>();
         mDownloadManager = DownloadManager.getInstance(this);
         mRecyclerView = findViewById(R.id.download_list);
+        ((SimpleItemAnimator)mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
         setData();
     }
 
