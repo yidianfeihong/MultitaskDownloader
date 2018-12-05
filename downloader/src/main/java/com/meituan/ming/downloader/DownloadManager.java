@@ -9,6 +9,8 @@ import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.notify.DataChanger;
 import com.meituan.ming.downloader.notify.DataWatcher;
 
+import java.io.File;
+
 /**
  * Created by shiwenming on 2018/10/21.
  */
@@ -122,4 +124,19 @@ public class DownloadManager {
         downloadEntry.reset();
         add(downloadEntry);
     }
+
+
+    public boolean containsDownloadEntry(String id) {
+        return DataChanger.getInstance(mContext).containsDownloadEntry(id);
+    }
+
+    public void deleteDownloadEntry(boolean forceDelete, String id) {
+        DataChanger.getInstance(mContext).deleteDownloadEntry(id);
+        if (forceDelete) {
+            File file = DownloadConfig.getConfig().getDownloadFile(id);
+            if (file.exists())
+                file.delete();
+        }
+    }
+
 }

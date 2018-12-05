@@ -1,12 +1,11 @@
 package com.meituan.ming.downloader.core;
 
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 
 import com.meituan.ming.downloader.DownloadConfig;
-import com.meituan.ming.downloader.entities.Constants;
 import com.meituan.ming.downloader.entities.DownloadEntry;
+import com.meituan.ming.downloader.utilities.TickTack;
 import com.meituan.ming.downloader.utilities.Trace;
 
 import java.io.File;
@@ -26,8 +25,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     private ConnectThread mConnectThread;
     private DownloadThread[] mDownloadThreads;
 
-    private long mLastOperatedTime;
-    private long mDownloadLength;
+    private long mLastDownloadLength;
     private File destFile;
 
     private DownloadEntry.DownloadStatus[] mDownloadStatuses;
@@ -37,7 +35,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         this.mDownloadEntry = entry;
         this.mHandler = handler;
         this.mExecutors = executors;
-        this.mDownloadLength = mDownloadEntry.currentLength;
+        this.mLastDownloadLength = mDownloadEntry.currentLength;
         this.destFile = DownloadConfig.getConfig().getDownloadFile(entry.url);
     }
 
@@ -174,11 +172,9 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         }
         int currDownloadLength = mDownloadEntry.currentLength;
         mDownloadEntry.currentLength += progress;
-        long currTime = System.currentTimeMillis();
-        if (currTime - mLastOperatedTime >= DownloadConfig.getConfig().getMinNotifyInterval()) {
-            mLastOperatedTime = currTime;
-            mDownloadEntry.downloadSpeed = (int) ((currDownloadLength - mDownloadLength) * 1000 / DownloadConfig.getConfig().getMinNotifyInterval());
-            mDownloadLength = currDownloadLength;
+        if (TickTack.getInstance().needToNotify()) {
+            mDownloadEntry.downloadSpeed = (int) ((currDownloadLength - mLastDownloadLength) * 1000 / DownloadConfig.getConfig().getMinNotifyInterval());
+            mLastDownloadLength = currDownloadLength;
             notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
         }
 

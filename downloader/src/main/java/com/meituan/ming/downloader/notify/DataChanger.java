@@ -15,7 +15,7 @@ import java.util.Observable;
  */
 public class DataChanger extends Observable {
 
-    public static DataChanger mInstance ;
+    public static DataChanger mInstance;
     private Context mContext;
     private LinkedHashMap<String, DownloadEntry> mOperatedEntries;
 
@@ -56,12 +56,17 @@ public class DataChanger extends Observable {
         return mOperatedEntries.get(id);
     }
 
-    public void addToOperatedEntryMap(String key, DownloadEntry value){
+    public void addToOperatedEntryMap(String key, DownloadEntry value) {
         mOperatedEntries.put(key, value);
     }
 
     public boolean containsDownloadEntry(String id) {
         return mOperatedEntries.containsKey(id);
+    }
+
+    public void deleteDownloadEntry(String id) {
+        mOperatedEntries.remove(id);
+        DBController.getInstance(mContext).deleteById(id);
     }
 
 

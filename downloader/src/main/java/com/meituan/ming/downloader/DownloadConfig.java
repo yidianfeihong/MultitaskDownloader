@@ -14,7 +14,7 @@ public class DownloadConfig {
     private int maxDownloadThreads = 3;
     private File downloadDir = null;
 
-    private boolean recoverDownloadWhenStart = false;
+    private boolean recoverDownloadWhenStart = true;
     private int maxRetrycount = 3;
     private int minOperateInterval = 800 * 1;
     private double minNotifyInterval = 800 * 1;
