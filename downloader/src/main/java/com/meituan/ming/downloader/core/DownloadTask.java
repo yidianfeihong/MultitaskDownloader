@@ -230,6 +230,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         }
 
         mDownloadEntry.status = DownloadEntry.DownloadStatus.error;
+        mDownloadEntry.downloadSpeed = 0;
         notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_ERROR);
     }
 

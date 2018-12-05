@@ -1,7 +1,12 @@
 package com.meituan.ming.downloader.core;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -38,6 +43,8 @@ public class DownloadService extends Service {
 
     private DataChanger mDataChanger;
     private DBController mDBController;
+
+    private NetInfoReceiver mNetInfoReceiver;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -77,6 +84,10 @@ public class DownloadService extends Service {
         mDataChanger = DataChanger.getInstance(getApplicationContext());
         mDBController = DBController.getInstance(getApplicationContext());
         intializeDownload();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        mNetInfoReceiver = new NetInfoReceiver();
+        registerReceiver(mNetInfoReceiver, intentFilter);
 
     }
 
@@ -109,6 +120,12 @@ public class DownloadService extends Service {
                 mDataChanger.addToOperatedEntryMap(entry.id, entry);
             }
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mNetInfoReceiver);
     }
 
     @Override
@@ -217,4 +234,16 @@ public class DownloadService extends Service {
     }
 
 
+    class NetInfoReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) DownloadService.this.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            if (networkInfo != null && networkInfo.isConnected()) {
+                recoverAll();
+            }else{
+                pauseAll();
+            }
+        }
+    }
 }
