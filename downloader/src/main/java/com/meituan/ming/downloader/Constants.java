@@ -18,4 +18,6 @@ public class Constants {
     public static final int READTIMEOUT = 5000;
     public static final int CONNECTTIMEOUT = 5000;
 
+    public static final double NOTIFY_PERIOD = 800;
+
 }

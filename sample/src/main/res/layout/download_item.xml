@@ -67,7 +67,6 @@
                 android:id="@+id/download_cancel"
                 android:layout_width="50dp"
                 android:layout_height="20dp"
-                android:layout_marginRight="5dp"
                 android:background="@drawable/button_bg_selector"
                 android:gravity="center"
                 android:text="cancel"

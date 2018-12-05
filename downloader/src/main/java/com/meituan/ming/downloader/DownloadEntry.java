@@ -27,7 +27,7 @@ public class DownloadEntry implements Serializable {
     @DatabaseField
     public DownloadStatus status = DownloadStatus.idle;
     @DatabaseField
-    public int percent;
+    public int downloadSpeed;
     @DatabaseField(dataType = DataType.SERIALIZABLE)
     public HashMap<Integer, Integer> ranges;
 
@@ -47,7 +47,7 @@ public class DownloadEntry implements Serializable {
 
     public void reset() {
         this.currentLength = 0;
-        this.percent = 0;
+        this.downloadSpeed = 0;
         this.ranges = null;
     }
 

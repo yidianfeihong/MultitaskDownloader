@@ -11,14 +11,14 @@ import android.widget.TextView;
 
 import com.meituan.ming.downloader.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
+import com.meituan.ming.downloader.util.DownloadUtils;
 
-import java.text.DecimalFormat;
 import java.util.List;
 
 /**
  * Created by shiwenming on 2018/10/23.
  */
-public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapter.DownloadItemViewHolder>{
+public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapter.DownloadItemViewHolder> {
 
     private List<DownloadEntry> mDownloadEntries;
     private DownloadManager mDownloadManager;
@@ -40,10 +40,10 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
     public void onBindViewHolder(@NonNull final DownloadItemViewHolder holder, int i) {
 
         final DownloadEntry downloadEntry = mDownloadEntries.get(i);
-        holder.downloadPercent.setText(getDownloadPercent(downloadEntry));
-        holder.downloadProgressBar.setProgress(downloadEntry.percent);
         holder.downloadTitle.setText(downloadEntry.name);
         holder.downloadButton.setText(downloadEntry.status.toString());
+        holder.downloadPercent.setText(DownloadUtils.getDownloadInfo(downloadEntry));
+        holder.downloadProgressBar.setProgress(DownloadUtils.getDownlaodPercent(downloadEntry));
         holder.downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,6 +60,7 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
                         break;
                     case cancelled:
                     case completed:
+                    case error:
                         mDownloadManager.reDownload(downloadEntry);
                         break;
                 }
@@ -95,51 +96,6 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
             downloadButton = itemView.findViewById(R.id.download_button);
             cancelButton = itemView.findViewById(R.id.download_cancel);
         }
-    }
-
-
-    public String getDownloadPercent(DownloadEntry entry) {
-        return setSize(entry.currentLength) + "/" + setSize(entry.totalLength) + " | " + entry.percent + "%";
-    }
-
-    public String getStatus(DownloadEntry entry) {
-
-        switch (entry.status) {
-            case idle:
-                return "下载";
-            case downloading:
-                return "暂停";
-            case paused:
-                return "继续";
-            case completed:
-                return "完成";
-            default:
-                return "下载";
-        }
-
-    }
-
-
-    public String setSize(int size) {
-        int GB = 1024 * 1024 * 1024;//定义GB的计算常量
-        int MB = 1024 * 1024;//定义MB的计算常量
-        int KB = 1024;//定义KB的计算常量
-        DecimalFormat df = new DecimalFormat("0.0");//格式化小数
-        String resultSize = "";
-        if (size / GB >= 1) {
-            //如果当前Byte的值大于等于1GB
-            resultSize = df.format(size / (float) GB) + "GB";
-        } else if (size / MB >= 1) {
-            //如果当前Byte的值大于等于1MB
-            resultSize = df.format(size / (float) MB) + "MB";
-        } else if (size / KB >= 1) {
-            //如果当前Byte的值大于等于1KB
-            resultSize = df.format(size / (float) KB) + "KB";
-        } else {
-            resultSize = size + "B" +
-                    "";
-        }
-        return resultSize;
     }
 
 }

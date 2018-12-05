@@ -28,7 +28,7 @@ public class ConnectThread implements Runnable {
             int length = connection.getContentLength();
             boolean isSupportRange = false;
             if (code == HttpURLConnection.HTTP_OK) {
-                String ranges = connection.getHeaderField("Accept-Range");
+                String ranges = connection.getHeaderField("Accept-Ranges");
                 if ("bytes".equals(ranges)) {
                     isSupportRange = true;
                 }

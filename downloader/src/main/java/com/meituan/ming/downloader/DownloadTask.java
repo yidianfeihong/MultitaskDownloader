@@ -21,11 +21,15 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     private ConnectThread mConnectThread;
     private DownloadThread[] mDownloadThreads;
 
+    private long mLastTime;
+    private long mDownloadLength;
+
 
     public DownloadTask(DownloadEntry entry, Handler handler, ExecutorService executors) {
         this.mDownloadEntry = entry;
         this.mHandler = handler;
         mExecutors = executors;
+        mDownloadLength = mDownloadEntry.currentLength;
     }
 
     public void start() {
@@ -152,21 +156,30 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
             int range = mDownloadEntry.ranges.get(index) + progress;
             mDownloadEntry.ranges.put(index, range);
         }
+        int currDownloadLength = mDownloadEntry.currentLength;
         mDownloadEntry.currentLength += progress;
-        if (mDownloadEntry.totalLength > 0) {
-            int percent = (int) (mDownloadEntry.currentLength * 100l / mDownloadEntry.totalLength);
-            if (percent > mDownloadEntry.percent) {
-                mDownloadEntry.percent = percent;
-                notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
-            }
-
-        } else {
-            int percent = mDownloadEntry.currentLength / 1024;
-            if (percent > mDownloadEntry.percent) {
-                mDownloadEntry.percent = percent;
-                notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
-            }
+        long currTime = System.currentTimeMillis();
+        if (currTime - mLastTime >= Constants.NOTIFY_PERIOD) {
+            mLastTime = currTime;
+            mDownloadEntry.downloadSpeed = (int) ((currDownloadLength - mDownloadLength) * 1000 / Constants.NOTIFY_PERIOD);
+            mDownloadLength = currDownloadLength;
+            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
         }
+
+//        if (mDownloadEntry.totalLength > 0) {
+//            int downloadSpeed = (int) (mDownloadEntry.currentLength * 100l / mDownloadEntry.totalLength);
+//            if (downloadSpeed > mDownloadEntry.downloadSpeed) {
+//                mDownloadEntry.downloadSpeed = downloadSpeed;
+//                notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
+//            }
+//
+//        } else {
+//            int temp = mDownloadEntry.currentLength / 1024;
+//            if (temp > mLastTime) {
+//                mLastTime = temp;
+//                notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
+//            }
+//        }
     }
 
     @Override
@@ -187,14 +200,13 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
             if (file.exists()) {
                 file.delete();
             }
+            mDownloadEntry.downloadSpeed = 0;
             notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_ERROR);
-
         } else {
+            mDownloadEntry.downloadSpeed = 0;
             mDownloadEntry.status = DownloadEntry.DownloadStatus.completed;
             notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_COMPLETED);
-
         }
-
     }
 
     @Override
@@ -211,6 +223,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         }
         if (isAllError) {
             mDownloadEntry.status = DownloadEntry.DownloadStatus.error;
+            mDownloadEntry.downloadSpeed = 0;
             notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_ERROR);
         }
     }
@@ -226,6 +239,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
             }
         }
         mDownloadEntry.status = DownloadEntry.DownloadStatus.paused;
+        mDownloadEntry.downloadSpeed = 0;
         notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
     }
 
@@ -245,6 +259,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         if (file.exists()) {
             file.delete();
         }
+        mDownloadEntry.downloadSpeed = 0;
         notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
     }
 }
