@@ -121,14 +121,6 @@ public class DownloadThread implements Runnable {
         }
     }
 
-    public boolean isPaused() {
-        return mStatus == DownloadEntry.DownloadStatus.paused || mStatus == DownloadEntry.DownloadStatus.completed;
-    }
-
-    public boolean isCanceled() {
-        return mStatus == DownloadEntry.DownloadStatus.cancelled || mStatus == DownloadEntry.DownloadStatus.completed;
-    }
-
     public boolean isRunning() {
         return mStatus == DownloadEntry.DownloadStatus.downloading;
     }
@@ -143,17 +135,9 @@ public class DownloadThread implements Runnable {
         Thread.currentThread().interrupt();
     }
 
-    public boolean isError() {
-        return mStatus == DownloadEntry.DownloadStatus.error;
-    }
-
     public void cancelByError() {
         isError = true;
         Thread.currentThread().interrupt();
-    }
-
-    public boolean isCompleted() {
-        return mStatus == DownloadEntry.DownloadStatus.completed;
     }
 
 
