@@ -1,4 +1,4 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.utilities;
 
 import android.util.Log;
 

@@ -1,4 +1,4 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.core;
 
 import android.app.Service;
 import android.content.Intent;
@@ -6,8 +6,11 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
+import com.meituan.ming.downloader.DownloadConfig;
+import com.meituan.ming.downloader.entities.Constants;
+import com.meituan.ming.downloader.notify.DataChanger;
+import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.db.DBController;
 
 import java.util.ArrayList;
@@ -44,7 +47,7 @@ public class DownloadService extends Service {
                 case NOTIFY_PAUSED_OR_CANCELLED:
                 case NOTIFY_COMPLETED:
                 case NOTIFY_ERROR:
-                    checkNext();
+                    checkNext((DownloadEntry) msg.obj);
                     break;
 
             }
@@ -52,7 +55,8 @@ public class DownloadService extends Service {
         }
     };
 
-    private void checkNext() {
+    private void checkNext(DownloadEntry entry) {
+        mDownloadingTasks.remove(entry.id);
         DownloadEntry downloadEntry = mWaitingQueue.poll();
         if (downloadEntry != null) {
             startDownload(downloadEntry);
@@ -72,12 +76,35 @@ public class DownloadService extends Service {
         mExecutors = Executors.newCachedThreadPool();
         mDataChanger = DataChanger.getInstance(getApplicationContext());
         mDBController = DBController.getInstance(getApplicationContext());
+        intializeDownload();
+
+    }
+
+    private void intializeDownload() {
+
         ArrayList<DownloadEntry> downloadEntries = mDBController.queryAll();
         if (downloadEntries != null) {
             for (DownloadEntry entry : downloadEntries) {
                 if (entry.status.equals(DownloadEntry.DownloadStatus.downloading) || entry.status.equals(DownloadEntry.DownloadStatus.waiting)) {
-                    entry.status = DownloadEntry.DownloadStatus.paused;
-                    addDownload(entry);
+                    if (DownloadConfig.getConfig().isRecoverDownloadWhenStart()) {
+                        if (entry.isSupportRange) {
+                            entry.status = DownloadEntry.DownloadStatus.paused;
+                            entry.downloadSpeed = 0;
+                        } else {
+                            entry.status = DownloadEntry.DownloadStatus.idle;
+                            entry.reset();
+                        }
+                        addDownload(entry);
+                    } else {
+                        if (entry.isSupportRange) {
+                            entry.status = DownloadEntry.DownloadStatus.paused;
+                            entry.downloadSpeed = 0;
+                        } else {
+                            entry.status = DownloadEntry.DownloadStatus.idle;
+                            entry.reset();
+                        }
+                        mDBController.newOrUpdate(entry);
+                    }
                 }
                 mDataChanger.addToOperatedEntryMap(entry.id, entry);
             }
@@ -146,7 +173,7 @@ public class DownloadService extends Service {
 
 
     private void addDownload(DownloadEntry downloadEntry) {
-        if (mDownloadingTasks.size() == Constants.MAX_DOWNLOAD_TASK) {
+        if (mDownloadingTasks.size() == DownloadConfig.getConfig().getMaxDownloadTasks()) {
             mWaitingQueue.offer(downloadEntry);
             downloadEntry.status = DownloadEntry.DownloadStatus.waiting;
             mDataChanger.postStatus(downloadEntry);

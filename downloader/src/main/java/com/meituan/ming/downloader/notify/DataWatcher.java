@@ -1,4 +1,6 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.notify;
+
+import com.meituan.ming.downloader.entities.DownloadEntry;
 
 import java.util.Observable;
 import java.util.Observer;

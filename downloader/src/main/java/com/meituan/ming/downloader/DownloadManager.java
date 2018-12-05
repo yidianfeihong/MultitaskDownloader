@@ -3,6 +3,12 @@ package com.meituan.ming.downloader;
 import android.content.Context;
 import android.content.Intent;
 
+import com.meituan.ming.downloader.core.DownloadService;
+import com.meituan.ming.downloader.entities.Constants;
+import com.meituan.ming.downloader.entities.DownloadEntry;
+import com.meituan.ming.downloader.notify.DataChanger;
+import com.meituan.ming.downloader.notify.DataWatcher;
+
 /**
  * Created by shiwenming on 2018/10/21.
  */
@@ -10,9 +16,7 @@ public class DownloadManager {
 
     private static DownloadManager mInstance;
     private final Context mContext;
-    private static final int MIN_OPERATE_INTERVAL = 500 * 1;
     private long mLastOperatedTime = 0;
-
 
     private DownloadManager(Context context) {
         this.mContext = context;
@@ -103,7 +107,7 @@ public class DownloadManager {
 
     public boolean checkIfExecutable() {
         long currentTimeMillis = System.currentTimeMillis();
-        if (currentTimeMillis - mLastOperatedTime > MIN_OPERATE_INTERVAL) {
+        if (currentTimeMillis - mLastOperatedTime > DownloadConfig.getConfig().getMinOperateInterval()) {
             mLastOperatedTime = currentTimeMillis;
             return true;
         }

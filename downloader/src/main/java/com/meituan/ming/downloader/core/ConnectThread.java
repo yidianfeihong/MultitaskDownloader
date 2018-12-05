@@ -1,4 +1,6 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.core;
+
+import com.meituan.ming.downloader.entities.Constants;
 
 import java.net.HttpURLConnection;
 import java.net.URL;

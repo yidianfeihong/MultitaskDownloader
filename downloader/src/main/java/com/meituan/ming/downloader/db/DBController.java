@@ -4,8 +4,8 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.j256.ormlite.dao.Dao;
-import com.meituan.ming.downloader.DownloadEntry;
-import com.meituan.ming.downloader.Trace;
+import com.meituan.ming.downloader.entities.DownloadEntry;
+import com.meituan.ming.downloader.utilities.Trace;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

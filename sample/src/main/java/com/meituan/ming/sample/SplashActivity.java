@@ -51,35 +51,19 @@ public class SplashActivity extends AppCompatActivity {
                 }
             }
             DownloadManager.getInstance(getApplicationContext());
-            handler.sendEmptyMessageAtTime(0, 3000);
+            handler.sendEmptyMessageAtTime(0, 2000);
         }
     }
 
     private void jumpTo() {
         Intent intent = new Intent(this, ListActivity.class);
         startActivity(intent);
+        finish();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
     }
-
-    public static String[] getDeniedPermissions(Context context, String[] permissions) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            ArrayList<String> deniedPermissionList = new ArrayList<>();
-            for (String permission : permissions) {
-                if (context.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-                    deniedPermissionList.add(permission);
-                }
-            }
-            int size = deniedPermissionList.size();
-            if (size > 0) {
-                return deniedPermissionList.toArray(new String[deniedPermissionList.size()]);
-            }
-        }
-        return null;
-    }
-
 
 }

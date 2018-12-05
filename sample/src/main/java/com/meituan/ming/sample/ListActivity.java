@@ -8,12 +8,10 @@ import android.support.v7.widget.SimpleItemAnimator;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.meituan.ming.downloader.Constants;
-import com.meituan.ming.downloader.DataWatcher;
-import com.meituan.ming.downloader.DownloadEntry;
+import com.meituan.ming.downloader.notify.DataWatcher;
+import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
-import com.meituan.ming.downloader.Trace;
-import com.meituan.ming.downloader.db.DBController;
+import com.meituan.ming.downloader.utilities.Trace;
 
 import java.util.ArrayList;
 import java.util.List;

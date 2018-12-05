@@ -1,6 +1,9 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.core;
 
 import android.os.Environment;
+
+import com.meituan.ming.downloader.entities.Constants;
+import com.meituan.ming.downloader.entities.DownloadEntry;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,7 +20,6 @@ public class DownloadThread implements Runnable {
     private int index;
     private int startPos;
     private int endPos;
-    private String path;
     private String url;
     private DownloadEntry.DownloadStatus mStatus;
     private DownloadListener listener;
@@ -25,18 +27,22 @@ public class DownloadThread implements Runnable {
     private volatile boolean isPaused;
     private volatile boolean isError;
 
+    private final File destFile;
     private boolean isSingleDownload;
 
-    public DownloadThread(String url, int index, int startPos, int endPos, DownloadListener listener) {
+    public DownloadThread(String url, File destFile, int index, int startPos, int endPos, DownloadListener listener) {
         this.url = url;
         this.index = index;
         this.startPos = startPos;
         this.endPos = endPos;
         if (startPos == 0 && endPos == 0) {
             isSingleDownload = true;
+        } else {
+            isSingleDownload = false;
         }
-        this.path = Environment.getExternalStorageDirectory() + File.separator + "Download" + File.separator + url.substring(url.lastIndexOf("/") + 1);
+        this.destFile = destFile;
         this.listener = listener;
+
     }
 
     @Override
@@ -52,13 +58,12 @@ public class DownloadThread implements Runnable {
             connection.setReadTimeout(Constants.READTIMEOUT);
             connection.setRequestMethod("GET");
             int code = connection.getResponseCode();
-            File file = new File(path);
             RandomAccessFile raf;
             FileOutputStream fos;
             InputStream in;
             if (code == HttpURLConnection.HTTP_PARTIAL) {
                 in = connection.getInputStream();
-                raf = new RandomAccessFile(file, "rw");
+                raf = new RandomAccessFile(destFile, "rw");
                 raf.seek(startPos);
                 byte[] buff = new byte[2048];
                 int len;
@@ -73,7 +78,7 @@ public class DownloadThread implements Runnable {
                 in.close();
             } else if (code == HttpURLConnection.HTTP_OK) {
                 in = connection.getInputStream();
-                fos = new FileOutputStream(file);
+                fos = new FileOutputStream(destFile);
                 byte[] buff = new byte[2048];
                 int len;
                 while ((len = in.read(buff)) != -1) {

@@ -6,10 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.meituan.ming.downloader.DataWatcher;
-import com.meituan.ming.downloader.DownloadEntry;
+import com.meituan.ming.downloader.notify.DataWatcher;
+import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
-import com.meituan.ming.downloader.Trace;
+import com.meituan.ming.downloader.utilities.Trace;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 

@@ -1,7 +1,8 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.notify;
 
 import android.content.Context;
 
+import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.db.DBController;
 
 import java.util.ArrayList;

@@ -9,9 +9,9 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.meituan.ming.downloader.DownloadEntry;
+import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
-import com.meituan.ming.downloader.util.DownloadUtils;
+import com.meituan.ming.downloader.utilities.DownloadUtils;
 
 import java.util.List;
 

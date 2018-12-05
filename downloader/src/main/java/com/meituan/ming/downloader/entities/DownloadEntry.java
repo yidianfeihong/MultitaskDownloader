@@ -1,9 +1,11 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.entities;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.meituan.ming.downloader.DownloadConfig;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -49,6 +51,10 @@ public class DownloadEntry implements Serializable {
         this.currentLength = 0;
         this.downloadSpeed = 0;
         this.ranges = null;
+        File file = DownloadConfig.getConfig().getDownloadFile(this.url);
+        if(file.exists()){
+            file.delete();
+        }
     }
 
 

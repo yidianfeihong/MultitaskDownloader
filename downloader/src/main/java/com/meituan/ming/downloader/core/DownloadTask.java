@@ -1,8 +1,13 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.core;
 
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+
+import com.meituan.ming.downloader.DownloadConfig;
+import com.meituan.ming.downloader.entities.Constants;
+import com.meituan.ming.downloader.entities.DownloadEntry;
+import com.meituan.ming.downloader.utilities.Trace;
 
 import java.io.File;
 import java.util.HashMap;
@@ -21,8 +26,9 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     private ConnectThread mConnectThread;
     private DownloadThread[] mDownloadThreads;
 
-    private long mLastTime;
+    private long mLastOperatedTime;
     private long mDownloadLength;
+    private File destFile;
 
     private DownloadEntry.DownloadStatus[] mDownloadStatuses;
 
@@ -30,8 +36,9 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     public DownloadTask(DownloadEntry entry, Handler handler, ExecutorService executors) {
         this.mDownloadEntry = entry;
         this.mHandler = handler;
-        mExecutors = executors;
-        mDownloadLength = mDownloadEntry.currentLength;
+        this.mExecutors = executors;
+        this.mDownloadLength = mDownloadEntry.currentLength;
+        this.destFile = DownloadConfig.getConfig().getDownloadFile(entry.url);
     }
 
     public void start() {
@@ -112,7 +119,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
 
         mDownloadThreads = new DownloadThread[1];
         mDownloadStatuses = new DownloadEntry.DownloadStatus[1];
-        mDownloadThreads[0] = new DownloadThread(mDownloadEntry.url, 0, 0, 0, this);
+        mDownloadThreads[0] = new DownloadThread(mDownloadEntry.url, destFile, 0, 0, 0, this);
         mDownloadStatuses[0] = DownloadEntry.DownloadStatus.downloading;
         mExecutors.execute(mDownloadThreads[0]);
     }
@@ -120,26 +127,26 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     private void startMultiThreadDownload() {
         mDownloadEntry.status = DownloadEntry.DownloadStatus.downloading;
         notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_DOWNLOADING);
-        int block = mDownloadEntry.totalLength / Constants.MAX_DOWNLOAD_THREADS;
+        int block = mDownloadEntry.totalLength / DownloadConfig.getConfig().getMaxDownloadThreads();
         int startPos;
         int endPos;
         if (mDownloadEntry.ranges == null) {
             mDownloadEntry.ranges = new HashMap<>();
-            for (int i = 0; i < Constants.MAX_DOWNLOAD_THREADS; i++) {
+            for (int i = 0; i < DownloadConfig.getConfig().getMaxDownloadThreads(); i++) {
                 mDownloadEntry.ranges.put(i, 0);
             }
         }
-        mDownloadStatuses = new DownloadEntry.DownloadStatus[Constants.MAX_DOWNLOAD_THREADS];
-        mDownloadThreads = new DownloadThread[Constants.MAX_DOWNLOAD_THREADS];
-        for (int i = 0; i < Constants.MAX_DOWNLOAD_THREADS; i++) {
+        mDownloadStatuses = new DownloadEntry.DownloadStatus[DownloadConfig.getConfig().getMaxDownloadThreads()];
+        mDownloadThreads = new DownloadThread[DownloadConfig.getConfig().getMaxDownloadThreads()];
+        for (int i = 0; i < DownloadConfig.getConfig().getMaxDownloadThreads(); i++) {
             startPos = block * i + mDownloadEntry.ranges.get(i);
-            if (i == Constants.MAX_DOWNLOAD_THREADS - 1) {
+            if (i == DownloadConfig.getConfig().getMaxDownloadThreads() - 1) {
                 endPos = mDownloadEntry.totalLength;
             } else {
                 endPos = block * (i + 1) - 1;
             }
             if (startPos < endPos) {
-                mDownloadThreads[i] = new DownloadThread(mDownloadEntry.url, i, startPos, endPos, this);
+                mDownloadThreads[i] = new DownloadThread(mDownloadEntry.url, destFile, i, startPos, endPos, this);
                 mDownloadStatuses[i] = DownloadEntry.DownloadStatus.downloading;
                 mExecutors.execute(mDownloadThreads[i]);
             } else {
@@ -168,9 +175,9 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         int currDownloadLength = mDownloadEntry.currentLength;
         mDownloadEntry.currentLength += progress;
         long currTime = System.currentTimeMillis();
-        if (currTime - mLastTime >= Constants.NOTIFY_PERIOD) {
-            mLastTime = currTime;
-            mDownloadEntry.downloadSpeed = (int) ((currDownloadLength - mDownloadLength) * 1000 / Constants.NOTIFY_PERIOD);
+        if (currTime - mLastOperatedTime >= DownloadConfig.getConfig().getMinNotifyInterval()) {
+            mLastOperatedTime = currTime;
+            mDownloadEntry.downloadSpeed = (int) ((currDownloadLength - mDownloadLength) * 1000 / DownloadConfig.getConfig().getMinNotifyInterval());
             mDownloadLength = currDownloadLength;
             notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
         }
@@ -184,8 +191,8 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
 //
 //        } else {
 //            int temp = mDownloadEntry.currentLength / 1024;
-//            if (temp > mLastTime) {
-//                mLastTime = temp;
+//            if (temp > mLastOperatedTime) {
+//                mLastOperatedTime = temp;
 //                notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_UPDATING);
 //            }
 //        }
@@ -202,20 +209,17 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         }
 
         if (mDownloadEntry.totalLength > 0 && mDownloadEntry.currentLength != mDownloadEntry.totalLength) {
-            mDownloadEntry.status = DownloadEntry.DownloadStatus.error;
-            mDownloadEntry.reset();
-            String path = Environment.getExternalStorageDirectory() + File.separator + "Download" + File.separator + mDownloadEntry.name;
-            File file = new File(path);
-            if (file.exists()) {
-                file.delete();
-            }
-            mDownloadEntry.downloadSpeed = 0;
+            resetDownload();
             notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_ERROR);
         } else {
-            mDownloadEntry.downloadSpeed = 0;
             mDownloadEntry.status = DownloadEntry.DownloadStatus.completed;
+            mDownloadEntry.downloadSpeed = 0;
             notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_COMPLETED);
         }
+    }
+
+    private void resetDownload() {
+        mDownloadEntry.reset();
     }
 
     @Override
@@ -258,13 +262,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         }
 
         mDownloadEntry.status = DownloadEntry.DownloadStatus.cancelled;
-        mDownloadEntry.reset();
-        String path = Environment.getExternalStorageDirectory() + File.separator + "Download" + File.separator + mDownloadEntry.name;
-        File file = new File(path);
-        if (file.exists()) {
-            file.delete();
-        }
-        mDownloadEntry.downloadSpeed = 0;
+        resetDownload();
         notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
     }
 }

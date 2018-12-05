@@ -1,4 +1,4 @@
-package com.meituan.ming.downloader;
+package com.meituan.ming.downloader.entities;
 
 /**
  * Created by shiwenming on 2018/10/21.
@@ -12,12 +12,8 @@ public class Constants {
     public static final int KEY_DOWNLOAD_ACTION_CANCEL = 4;
     public static final int KEY_DOWNLOAD_ACTION_PAUSE_ALL = 5;
     public static final int KEY_DOWNLOAD_ACTION_RECOVER_ALL = 6;
-    public static final int MAX_DOWNLOAD_TASK = 3;
-    public static final int MAX_DOWNLOAD_THREADS = 3;
 
     public static final int READTIMEOUT = 5000;
     public static final int CONNECTTIMEOUT = 5000;
-
-    public static final double NOTIFY_PERIOD = 800;
 
 }
