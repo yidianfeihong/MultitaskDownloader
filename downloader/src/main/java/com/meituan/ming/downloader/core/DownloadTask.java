@@ -5,8 +5,8 @@ import android.os.Message;
 
 import com.meituan.ming.downloader.DownloadConfig;
 import com.meituan.ming.downloader.entities.DownloadEntry;
-import com.meituan.ming.downloader.utilities.TimeUtil;
 import com.meituan.ming.downloader.utilities.LogUtil;
+import com.meituan.ming.downloader.utilities.TimeUtil;
 
 import java.io.File;
 import java.util.HashMap;
@@ -157,7 +157,7 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
     public void onConnectError(String message) {
 
         mDownloadEntry.status = DownloadEntry.DownloadStatus.paused;
-        notifyUpdate(mDownloadEntry, DownloadService. NOTIFY_PAUSED_OR_CANCELLED);
+        notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
 
 //        if (isPaused || isCanceled) {
 //            mDownloadEntry.status = isPaused ? DownloadEntry.DownloadStatus.paused : DownloadEntry.DownloadStatus.cancelled;

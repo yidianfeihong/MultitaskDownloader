@@ -1,7 +1,9 @@
 package com.meituan.ming.downloader;
 
 import android.os.Environment;
+
 import com.meituan.ming.downloader.utilities.DownloadInfoUtil;
+
 import java.io.File;
 
 /**
@@ -17,7 +19,7 @@ public class DownloadConfig {
     private boolean recoverDownloadWhenStart = true;
     private int maxRetrycount = 3;
     private int minOperateInterval = 500;
-    private double minNotifyInterval = 500;
+    private double minNotifyInterval = 1000;
 
     public double getMinNotifyInterval() {
         return minNotifyInterval;

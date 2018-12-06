@@ -1,14 +1,14 @@
 package com.meituan.ming.sample;
 
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
-import com.meituan.ming.downloader.notify.DownloadWatcher;
-import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
+import com.meituan.ming.downloader.entities.DownloadEntry;
+import com.meituan.ming.downloader.notify.DownloadWatcher;
 import com.meituan.ming.downloader.utilities.LogUtil;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {

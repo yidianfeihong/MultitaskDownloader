@@ -9,8 +9,8 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
+import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.utilities.DownloadInfoUtil;
 
 import java.util.List;
@@ -38,8 +38,8 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
 
     @Override
     public void onBindViewHolder(@NonNull final DownloadItemViewHolder holder, int i) {
-
-        final DownloadEntry downloadEntry = mDownloadEntries.get(i);
+        DownloadEntry entry = mDownloadEntries.get(i);
+        final DownloadEntry downloadEntry = mDownloadManager.containsDownloadEntry(entry.url) ? mDownloadManager.queryDownloadEntry(entry.url) : entry;
         holder.downloadTitle.setText(downloadEntry.name);
         holder.downloadButton.setText(downloadEntry.status.toString());
         if (downloadEntry.status == DownloadEntry.DownloadStatus.completed) {
