@@ -1,7 +1,5 @@
 package com.meituan.ming.downloader.core;
 
-import android.os.Environment;
-
 import com.meituan.ming.downloader.entities.Constants;
 import com.meituan.ming.downloader.entities.DownloadEntry;
 

@@ -13,7 +13,7 @@ public class Constants {
     public static final int KEY_DOWNLOAD_ACTION_PAUSE_ALL = 5;
     public static final int KEY_DOWNLOAD_ACTION_RECOVER_ALL = 6;
 
-    public static final int READTIMEOUT = 1000*10;
-    public static final int CONNECTTIMEOUT = 1000*10;
+    public static final int READTIMEOUT = 1000 * 10;
+    public static final int CONNECTTIMEOUT = 1000 * 10;
 
 }

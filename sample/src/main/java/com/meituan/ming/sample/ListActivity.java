@@ -1,16 +1,16 @@
 package com.meituan.ming.sample;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.meituan.ming.downloader.notify.DownloadWatcher;
-import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
+import com.meituan.ming.downloader.entities.DownloadEntry;
+import com.meituan.ming.downloader.notify.DownloadWatcher;
 import com.meituan.ming.downloader.utilities.LogUtil;
 
 import java.util.ArrayList;
@@ -26,13 +26,7 @@ public class ListActivity extends AppCompatActivity {
     private DownloadWatcher mWatcher = new DownloadWatcher() {
         @Override
         public void notifyUpdate(DownloadEntry entry) {
-            int index = mDownloadEntries.indexOf(entry);
-            if (index != -1) {
-                mDownloadEntries.remove(entry);
-                mDownloadEntries.add(index, entry);
-                mAdapter.notifyItemChanged(index);
-            }
-            LogUtil.e(entry.toString());
+            mAdapter.notifyDataSetChanged();
         }
     };
 
@@ -43,7 +37,7 @@ public class ListActivity extends AppCompatActivity {
         mDownloadEntries = new ArrayList<>();
         mDownloadManager = DownloadManager.getInstance(this);
         mRecyclerView = findViewById(R.id.download_list);
-        ((SimpleItemAnimator)mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
+        ((SimpleItemAnimator) mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
         setData();
     }
 
@@ -77,13 +71,13 @@ public class ListActivity extends AppCompatActivity {
         mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/844a7871663f7f79/weixin_1360.apk"));
         mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/ec1b21ea1bb45374/zhangyue_71101.apk"));
         mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/d534b0cbcbde3132/gaodeditu_6750.apk"));
-        for (int i = 0; i < mDownloadEntries.size(); i++) {
-            DownloadEntry entry = mDownloadEntries.get(i);
-            DownloadEntry realEntry = mDownloadManager.queryDownloadEntry(entry.id);
-            if (realEntry != null) {
-                mDownloadEntries.set(i, realEntry);
-            }
-        }
+//        for (int i = 0; i < mDownloadEntries.size(); i++) {
+//            DownloadEntry entry = mDownloadEntries.get(i);
+//            DownloadEntry realEntry = mDownloadManager.queryDownloadEntry(entry.id);
+//            if (realEntry != null) {
+//                mDownloadEntries.set(i, realEntry);
+//            }
+//        }
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new DownloadListAdapter(mDownloadEntries, mDownloadManager);
@@ -99,6 +93,7 @@ public class ListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mAdapter.notifyDataSetChanged();
         mDownloadManager.addObserver(mWatcher);
     }
 

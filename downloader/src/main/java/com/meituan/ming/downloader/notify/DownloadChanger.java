@@ -2,8 +2,8 @@ package com.meituan.ming.downloader.notify;
 
 import android.content.Context;
 
-import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.db.DBController;
+import com.meituan.ming.downloader.entities.DownloadEntry;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

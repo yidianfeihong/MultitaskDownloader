@@ -1,19 +1,15 @@
 package com.meituan.ming.downloader.core;
 
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.meituan.ming.downloader.DownloadConfig;
@@ -91,6 +87,7 @@ public class DownloadService extends Service {
         mDownloadChanger = DownloadChanger.getInstance(getApplicationContext());
         mDBController = DBController.getInstance(getApplicationContext());
         intializeDownload();
+        //注册网络状态监听
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         mNetInfoReceiver = new NetInfoReceiver();
