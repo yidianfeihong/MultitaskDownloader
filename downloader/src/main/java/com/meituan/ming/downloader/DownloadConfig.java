@@ -16,8 +16,8 @@ public class DownloadConfig {
 
     private boolean recoverDownloadWhenStart = true;
     private int maxRetrycount = 3;
-    private int minOperateInterval = 500 * 1;
-    private double minNotifyInterval = 500 * 1;
+    private int minOperateInterval = 500;
+    private double minNotifyInterval = 500;
 
     public double getMinNotifyInterval() {
         return minNotifyInterval;
