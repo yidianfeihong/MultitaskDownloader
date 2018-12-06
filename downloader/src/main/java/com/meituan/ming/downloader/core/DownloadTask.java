@@ -155,13 +155,17 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
 
     @Override
     public void onConnectError(String message) {
-        if (isPaused || isCanceled) {
-            mDownloadEntry.status = isPaused ? DownloadEntry.DownloadStatus.paused : DownloadEntry.DownloadStatus.cancelled;
-            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
-        } else {
-            mDownloadEntry.status = DownloadEntry.DownloadStatus.error;
-            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_ERROR);
-        }
+
+        mDownloadEntry.status = DownloadEntry.DownloadStatus.paused;
+        notifyUpdate(mDownloadEntry, DownloadService. NOTIFY_PAUSED_OR_CANCELLED);
+
+//        if (isPaused || isCanceled) {
+//            mDownloadEntry.status = isPaused ? DownloadEntry.DownloadStatus.paused : DownloadEntry.DownloadStatus.cancelled;
+//            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
+//        } else {
+//            mDownloadEntry.status = DownloadEntry.DownloadStatus.error;
+//            notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_ERROR);
+//        }
     }
 
     @Override
@@ -217,10 +221,13 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         mDownloadEntry.reset();
     }
 
-    private boolean isErrorPaused;
 
     @Override
     public synchronized void onDownloadError(int index, String message) {
+
+        if (mDownloadEntry.status == DownloadEntry.DownloadStatus.paused) {
+            return;
+        }
 
         for (int i = 0; i < mDownloadThreads.length; i++) {
             if (mDownloadStatuses[i] != DownloadEntry.DownloadStatus.paused) {
@@ -229,7 +236,6 @@ public class DownloadTask implements ConnectThread.ConnectListener, DownloadThre
         }
         mDownloadEntry.status = DownloadEntry.DownloadStatus.paused;
         notifyUpdate(mDownloadEntry, DownloadService.NOTIFY_PAUSED_OR_CANCELLED);
-
 
 //        mDownloadStatuses[index] = DownloadEntry.DownloadStatus.error;
 //        for (int i = 0; i < mDownloadStatuses.length; i++) {

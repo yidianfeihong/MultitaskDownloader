@@ -52,7 +52,7 @@ public class ConnectThread implements Runnable {
     }
 
     public void cancel() {
-
+        Thread.currentThread().interrupt();
     }
 
     interface ConnectListener {
