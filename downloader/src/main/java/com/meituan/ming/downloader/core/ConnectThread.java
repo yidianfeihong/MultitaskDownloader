@@ -1,53 +1,62 @@
 package com.meituan.ming.downloader.core;
 
-import com.meituan.ming.downloader.entities.Constants;
+import com.meituan.ming.downloader.OkHttpManager;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class ConnectThread implements Runnable {
 
-    private String mUrl;
-    private ConnectListener mListener;
+    private String url;
+    private ConnectListener listener;
     public volatile boolean isRunning;
 
     public ConnectThread(String url, ConnectListener listener) {
-        mUrl = url;
-        mListener = listener;
+        this.url = url;
+        this.listener = listener;
     }
+
 
     @Override
     public void run() {
         isRunning = true;
-        HttpURLConnection connection = null;
-        try {
-            URL url = new URL(mUrl);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setConnectTimeout(Constants.CONNECTTIMEOUT);
-            connection.setReadTimeout(Constants.READTIMEOUT);
-            connection.setRequestMethod("GET");
-            int code = connection.getResponseCode();
-            int length = connection.getContentLength();
-            boolean isSupportRange = false;
-            if (code == HttpURLConnection.HTTP_OK) {
-                String ranges = connection.getHeaderField("Accept-Ranges");
-                if ("bytes".equals(ranges)) {
-                    isSupportRange = true;
-                }
-                mListener.onConnected(isSupportRange, length);
-            } else {
-                mListener.onConnectError("server error:" + code);
-            }
-            isRunning = false;
-        } catch (Exception e) {
-            isRunning = false;
-            mListener.onConnectError(e.getMessage());
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
 
+        OkHttpManager.getInstance().initRequest(url, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                isRunning = false;
+                listener.onConnectError(e.getMessage());
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                try {
+                    int length = (int) response.body().contentLength();
+                    int code = response.code();
+                    boolean isSupportRange = false;
+                    if (code == HttpURLConnection.HTTP_OK) {
+                        String ranges = response.header("Accept-Ranges");
+                        if ("bytes".equals(ranges)) {
+                            isSupportRange = true;
+                        }
+                        listener.onConnected(isSupportRange, length);
+                    } else {
+                        listener.onConnectError("server error:" + code);
+                    }
+                    isRunning = false;
+                } catch (Exception e) {
+                    isRunning = false;
+                    listener.onConnectError(e.getMessage());
+                } finally {
+                    if (response != null) {
+                        response.close();
+                    }
+                }
+            }
+        });
 
     }
 
