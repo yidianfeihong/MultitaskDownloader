@@ -1,22 +1,27 @@
 package com.meituan.ming.downloader.core;
 
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.meituan.ming.downloader.DownloadConfig;
-import com.meituan.ming.downloader.entities.Constants;
-import com.meituan.ming.downloader.notify.DataChanger;
-import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.db.DBController;
+import com.meituan.ming.downloader.entities.Constants;
+import com.meituan.ming.downloader.entities.DownloadEntry;
+import com.meituan.ming.downloader.notify.DownloadChanger;
+import com.meituan.ming.downloader.utilities.NetworkUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +46,7 @@ public class DownloadService extends Service {
     public static final int NOTIFY_CONNECTING = 5;
     public static final int NOTIFY_ERROR = 6;
 
-    private DataChanger mDataChanger;
+    private DownloadChanger mDownloadChanger;
     private DBController mDBController;
 
     private NetInfoReceiver mNetInfoReceiver;
@@ -50,15 +55,17 @@ public class DownloadService extends Service {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+            DownloadEntry entry = (DownloadEntry) msg.obj;
             switch (msg.what) {
                 case NOTIFY_PAUSED_OR_CANCELLED:
                 case NOTIFY_COMPLETED:
                 case NOTIFY_ERROR:
-                    checkNext((DownloadEntry) msg.obj);
+                    entry.downloadSpeed = 0;
+                    checkNext(entry);
                     break;
 
             }
-            mDataChanger.postStatus((DownloadEntry) msg.obj);
+            mDownloadChanger.postStatus(entry);
         }
     };
 
@@ -81,7 +88,7 @@ public class DownloadService extends Service {
     public void onCreate() {
         super.onCreate();
         mExecutors = Executors.newCachedThreadPool();
-        mDataChanger = DataChanger.getInstance(getApplicationContext());
+        mDownloadChanger = DownloadChanger.getInstance(getApplicationContext());
         mDBController = DBController.getInstance(getApplicationContext());
         intializeDownload();
         IntentFilter intentFilter = new IntentFilter();
@@ -117,7 +124,7 @@ public class DownloadService extends Service {
                         mDBController.newOrUpdate(entry);
                     }
                 }
-                mDataChanger.addToOperatedEntryMap(entry.id, entry);
+                mDownloadChanger.addToOperatedEntryMap(entry.id, entry);
             }
         }
     }
@@ -130,10 +137,13 @@ public class DownloadService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (!checkWifiAvailable()) {
+            checkWifiAvailable();
+        }
         if (intent != null) {
             DownloadEntry entry = (DownloadEntry) intent.getSerializableExtra(Constants.KEY_DOWNLOAD_ENTRY);
-            if (entry != null && mDataChanger.containsDownloadEntry(entry.id)) {
-                entry = mDataChanger.queryDownloadEntryById(entry.id);
+            if (entry != null && mDownloadChanger.containsDownloadEntry(entry.id)) {
+                entry = mDownloadChanger.queryDownloadEntryById(entry.id);
             }
             int action = intent.getIntExtra(Constants.KEY_DOWNLOAD_ACTION, -1);
             doAction(action, entry);
@@ -167,7 +177,7 @@ public class DownloadService extends Service {
     }
 
     private void recoverAll() {
-        ArrayList<DownloadEntry> recoverableEntries = mDataChanger.queryAllRecoverableEntries();
+        ArrayList<DownloadEntry> recoverableEntries = mDownloadChanger.queryAllRecoverableEntries();
         if (recoverableEntries != null) {
             for (DownloadEntry downloadEntry : recoverableEntries) {
                 addDownload(downloadEntry);
@@ -184,7 +194,7 @@ public class DownloadService extends Service {
         while (mWaitingQueue.iterator().hasNext()) {
             DownloadEntry downloadEntry = mWaitingQueue.poll();
             downloadEntry.status = DownloadEntry.DownloadStatus.paused;
-            mDataChanger.postStatus(downloadEntry);
+            mDownloadChanger.postStatus(downloadEntry);
         }
     }
 
@@ -193,7 +203,7 @@ public class DownloadService extends Service {
         if (mDownloadingTasks.size() == DownloadConfig.getConfig().getMaxDownloadTasks()) {
             mWaitingQueue.offer(downloadEntry);
             downloadEntry.status = DownloadEntry.DownloadStatus.waiting;
-            mDataChanger.postStatus(downloadEntry);
+            mDownloadChanger.postStatus(downloadEntry);
         } else {
             startDownload(downloadEntry);
         }
@@ -213,7 +223,7 @@ public class DownloadService extends Service {
             mWaitingQueue.remove(entry);
             entry.status = DownloadEntry.DownloadStatus.cancelled;
             entry.reset();
-            mDataChanger.postStatus(entry);
+            mDownloadChanger.postStatus(entry);
         }
     }
 
@@ -229,20 +239,33 @@ public class DownloadService extends Service {
         } else {
             mWaitingQueue.remove(entry);
             entry.status = DownloadEntry.DownloadStatus.paused;
-            mDataChanger.postStatus(entry);
+            mDownloadChanger.postStatus(entry);
         }
     }
 
+    public boolean checkWifiAvailable() {
+        String netWorkState = NetworkUtil.getNetWorkState(getApplicationContext());
+        switch (netWorkState) {
+            case NetworkUtil.NETWORKTYPE_WIFI:
+                return true;
+            case NetworkUtil.NETWORKTYPE_MOBILE:
+            case NetworkUtil.NETWORKTYPE_UNAVAILABLE:
+                Toast.makeText(this, "wifi未连接", Toast.LENGTH_SHORT).show();
+                return false;
+            default:
+                return false;
+        }
+    }
 
     class NetInfoReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            ConnectivityManager connectivityManager = (ConnectivityManager) DownloadService.this.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            if (networkInfo != null && networkInfo.isConnected()) {
-                recoverAll();
-            }else{
-                pauseAll();
+            if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
+                if (checkWifiAvailable()) {
+                    recoverAll();
+                } else {
+                    pauseAll();
+                }
             }
         }
     }

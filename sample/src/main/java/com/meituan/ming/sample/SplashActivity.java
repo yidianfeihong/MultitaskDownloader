@@ -1,19 +1,19 @@
 package com.meituan.ming.sample;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.widget.Toast;
 
 import com.meituan.ming.downloader.DownloadManager;
-
-import java.util.ArrayList;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -53,6 +53,7 @@ public class SplashActivity extends AppCompatActivity {
             DownloadManager.getInstance(getApplicationContext());
             handler.sendEmptyMessageAtTime(0, 2000);
         }
+
     }
 
     private void jumpTo() {

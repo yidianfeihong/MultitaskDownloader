@@ -8,7 +8,7 @@ import java.util.Observer;
 /**
  * Created by shiwenming on 2018/10/21.
  */
-public abstract class DataWatcher implements Observer {
+public abstract class DownloadWatcher implements Observer {
 
 
     @Override

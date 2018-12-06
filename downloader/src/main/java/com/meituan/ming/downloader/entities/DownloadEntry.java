@@ -44,7 +44,7 @@ public class DownloadEntry implements Serializable {
     }
 
 
-    public enum DownloadStatus {idle, waiting, connecting, downloading, paused, resumed, cancelled, completed, error}
+    public enum DownloadStatus {idle, waiting, connecting, downloading, paused, resumed, cancelled, completed, netDisabled, error}
 
 
     public void reset() {
@@ -52,7 +52,7 @@ public class DownloadEntry implements Serializable {
         this.downloadSpeed = 0;
         this.ranges = null;
         File file = DownloadConfig.getConfig().getDownloadFile(this.url);
-        if(file.exists()){
+        if (file.exists()) {
             file.delete();
         }
     }

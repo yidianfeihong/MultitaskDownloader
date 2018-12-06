@@ -132,17 +132,14 @@ public class DownloadThread implements Runnable {
 
     public void pause() {
         isPaused = true;
-        Thread.currentThread().interrupt();
     }
 
     public void cancel() {
         isCanceled = true;
-        Thread.currentThread().interrupt();
     }
 
     public void cancelByError() {
         isError = true;
-        Thread.currentThread().interrupt();
     }
 
 

@@ -6,8 +6,8 @@ import android.content.Intent;
 import com.meituan.ming.downloader.core.DownloadService;
 import com.meituan.ming.downloader.entities.Constants;
 import com.meituan.ming.downloader.entities.DownloadEntry;
-import com.meituan.ming.downloader.notify.DataChanger;
-import com.meituan.ming.downloader.notify.DataWatcher;
+import com.meituan.ming.downloader.notify.DownloadChanger;
+import com.meituan.ming.downloader.notify.DownloadWatcher;
 
 import java.io.File;
 
@@ -98,12 +98,12 @@ public class DownloadManager {
 
     }
 
-    public void addObserver(DataWatcher watcher) {
-        DataChanger.getInstance(mContext).addObserver(watcher);
+    public void addObserver(DownloadWatcher watcher) {
+        DownloadChanger.getInstance(mContext).addObserver(watcher);
     }
 
-    public void removeObserver(DataWatcher watcher) {
-        DataChanger.getInstance(mContext).deleteObserver(watcher);
+    public void removeObserver(DownloadWatcher watcher) {
+        DownloadChanger.getInstance(mContext).deleteObserver(watcher);
     }
 
 
@@ -117,7 +117,7 @@ public class DownloadManager {
     }
 
     public DownloadEntry queryDownloadEntry(String id) {
-        return DataChanger.getInstance(mContext).queryDownloadEntryById(id);
+        return DownloadChanger.getInstance(mContext).queryDownloadEntryById(id);
     }
 
     public void reDownload(DownloadEntry downloadEntry) {
@@ -127,11 +127,11 @@ public class DownloadManager {
 
 
     public boolean containsDownloadEntry(String id) {
-        return DataChanger.getInstance(mContext).containsDownloadEntry(id);
+        return DownloadChanger.getInstance(mContext).containsDownloadEntry(id);
     }
 
     public void deleteDownloadEntry(boolean forceDelete, String id) {
-        DataChanger.getInstance(mContext).deleteDownloadEntry(id);
+        DownloadChanger.getInstance(mContext).deleteDownloadEntry(id);
         if (forceDelete) {
             File file = DownloadConfig.getConfig().getDownloadFile(id);
             if (file.exists())

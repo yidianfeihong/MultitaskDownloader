@@ -5,9 +5,9 @@ import android.util.Log;
 /**
  * Created by shiwenming on 2018/10/22.
  */
-public class Trace {
+public class LogUtil {
 
-    public static String TAG = "trace";
+    public static String TAG = "logUtil";
     public static final boolean DEBUG = true;
 
 

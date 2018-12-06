@@ -10,7 +10,7 @@ import java.text.DecimalFormat;
 /**
  * Created by shiwenming on 2018/12/5.
  */
-public class DownloadUtils {
+public class DownloadInfoUtil {
 
 
     private static final String HASH_ALGORITHM = "MD5";
@@ -29,7 +29,7 @@ public class DownloadUtils {
             digest.update(data);
             hash = digest.digest();
         } catch (NoSuchAlgorithmException e) {
-            Trace.e(e.getMessage());
+            LogUtil.e(e.getMessage());
         }
         return hash;
     }

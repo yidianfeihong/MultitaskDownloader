@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.j256.ormlite.dao.Dao;
 import com.meituan.ming.downloader.entities.DownloadEntry;
-import com.meituan.ming.downloader.utilities.Trace;
+import com.meituan.ming.downloader.utilities.LogUtil;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class DBController {
             dao = mDBhelper.getDao(DownloadEntry.class);
             return (ArrayList<DownloadEntry>) dao.query(dao.queryBuilder().prepare());
         } catch (SQLException e) {
-            Trace.e(e.getMessage());
+            LogUtil.e(e.getMessage());
             return null;
         }
     }
@@ -56,7 +56,7 @@ public class DBController {
             Dao<DownloadEntry, String> dao = mDBhelper.getDao(DownloadEntry.class);
             return dao.queryForId(id);
         } catch (SQLException e) {
-            Trace.e(e.getMessage());
+            LogUtil.e(e.getMessage());
             return null;
         }
     }

@@ -6,10 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.meituan.ming.downloader.notify.DataWatcher;
+import com.meituan.ming.downloader.notify.DownloadWatcher;
 import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
-import com.meituan.ming.downloader.utilities.Trace;
+import com.meituan.ming.downloader.utilities.LogUtil;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -20,11 +20,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DownloadEntry mDownloadEntry;
     private DownloadManager mDownloadManager;
 
-    private DataWatcher mWatcher = new DataWatcher() {
+    private DownloadWatcher mWatcher = new DownloadWatcher() {
         @Override
         public void notifyUpdate(DownloadEntry entry) {
             mDownloadEntry = entry;
-            Trace.e(entry.toString());
+            LogUtil.e(entry.toString());
         }
     };
 

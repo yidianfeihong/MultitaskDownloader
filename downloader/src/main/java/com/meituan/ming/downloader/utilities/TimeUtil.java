@@ -2,18 +2,18 @@ package com.meituan.ming.downloader.utilities;
 
 import com.meituan.ming.downloader.DownloadConfig;
 
-public class TickTack {
+public class TimeUtil {
 
-    private static TickTack mInstance;
+    private static TimeUtil mInstance;
     private long mLastStamp;
 
-    private TickTack() {
+    private TimeUtil() {
 
     }
 
-    public synchronized static TickTack getInstance() {
+    public synchronized static TimeUtil getInstance() {
         if (mInstance == null) {
-            mInstance = new TickTack();
+            mInstance = new TimeUtil();
         }
         return mInstance;
     }

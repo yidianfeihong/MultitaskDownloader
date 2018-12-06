@@ -13,20 +13,20 @@ import java.util.Observable;
 /**
  * Created by shiwenming on 2018/10/21.
  */
-public class DataChanger extends Observable {
+public class DownloadChanger extends Observable {
 
-    public static DataChanger mInstance;
+    public static DownloadChanger mInstance;
     private Context mContext;
     private LinkedHashMap<String, DownloadEntry> mOperatedEntries;
 
-    private DataChanger(Context context) {
+    private DownloadChanger(Context context) {
         mContext = context;
         mOperatedEntries = new LinkedHashMap<>();
     }
 
-    public static DataChanger getInstance(Context context) {
+    public static DownloadChanger getInstance(Context context) {
         if (mInstance == null) {
-            mInstance = new DataChanger(context);
+            mInstance = new DownloadChanger(context);
         }
         return mInstance;
     }

@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
-import com.meituan.ming.downloader.utilities.DownloadUtils;
+import com.meituan.ming.downloader.utilities.DownloadInfoUtil;
 
 import java.util.List;
 
@@ -42,8 +42,20 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
         final DownloadEntry downloadEntry = mDownloadEntries.get(i);
         holder.downloadTitle.setText(downloadEntry.name);
         holder.downloadButton.setText(downloadEntry.status.toString());
-        holder.downloadPercent.setText(DownloadUtils.getDownloadInfo(downloadEntry));
-        holder.downloadProgressBar.setProgress(DownloadUtils.getDownlaodPercent(downloadEntry));
+        if (downloadEntry.status == DownloadEntry.DownloadStatus.completed) {
+            holder.downloadPercent.setText("下载完成");
+            holder.downloadProgressBar.setVisibility(View.GONE);
+            holder.cancelButton.setVisibility(View.GONE);
+        } else {
+            holder.downloadPercent.setText(DownloadInfoUtil.getDownloadInfo(downloadEntry));
+            holder.downloadProgressBar.setProgress(DownloadInfoUtil.getDownlaodPercent(downloadEntry));
+            holder.cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mDownloadManager.cancel(downloadEntry);
+                }
+            });
+        }
         holder.downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,12 +78,7 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
                 }
             }
         });
-        holder.cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDownloadManager.cancel(downloadEntry);
-            }
-        });
+
     }
 
     @Override

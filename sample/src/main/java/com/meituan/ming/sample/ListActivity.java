@@ -8,10 +8,10 @@ import android.support.v7.widget.SimpleItemAnimator;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.meituan.ming.downloader.notify.DataWatcher;
+import com.meituan.ming.downloader.notify.DownloadWatcher;
 import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.DownloadManager;
-import com.meituan.ming.downloader.utilities.Trace;
+import com.meituan.ming.downloader.utilities.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class ListActivity extends AppCompatActivity {
     private DownloadManager mDownloadManager;
     private DownloadListAdapter mAdapter;
 
-    private DataWatcher mWatcher = new DataWatcher() {
+    private DownloadWatcher mWatcher = new DownloadWatcher() {
         @Override
         public void notifyUpdate(DownloadEntry entry) {
             int index = mDownloadEntries.indexOf(entry);
@@ -32,7 +32,7 @@ public class ListActivity extends AppCompatActivity {
                 mDownloadEntries.add(index, entry);
                 mAdapter.notifyItemChanged(index);
             }
-            Trace.e(entry.toString());
+            LogUtil.e(entry.toString());
         }
     };
 
