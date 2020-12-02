@@ -66,7 +66,7 @@ public class ListActivity extends AppCompatActivity {
     private void setData() {
         mDownloadEntries.add(new DownloadEntry("http://img3.imgtn.bdimg.com/it/u=3226098301,2803294068&fm=26&gp=0.jpg"));
         mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/31ce1b54da062ae0/aiqiyi_81190.apk"));
-        mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/61737a31b1c20d13/tengxunshipin_17785.apk"));
+        mDownloadEntries.add(new DownloadEntry("http://dl.pddpic.com/android_dev/6fbcb1b4-6a0f-4273-8435-b3c19c94dc29/baidufeed/pinduoduo.apk"));
         mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/4f9fe69e53e2a754/jinritoutiao_700.apk"));
         mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/844a7871663f7f79/weixin_1360.apk"));
         mDownloadEntries.add(new DownloadEntry("http://gdown.baidu.com/data/wisegame/ec1b21ea1bb45374/zhangyue_71101.apk"));
