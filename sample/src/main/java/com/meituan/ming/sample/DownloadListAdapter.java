@@ -48,7 +48,7 @@ public class DownloadListAdapter extends RecyclerView.Adapter<DownloadListAdapte
             holder.cancelButton.setVisibility(View.GONE);
         } else {
             holder.downloadPercent.setText(DownloadInfoUtil.getDownloadInfo(downloadEntry));
-            holder.downloadProgressBar.setProgress(DownloadInfoUtil.getDownlaodPercent(downloadEntry));
+            holder.downloadProgressBar.setProgress(DownloadInfoUtil.getDownloadPercent(downloadEntry));
             holder.cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

@@ -19,6 +19,7 @@ import com.meituan.ming.downloader.entities.DownloadEntry;
 import com.meituan.ming.downloader.notify.DownloadChanger;
 import com.meituan.ming.downloader.utilities.NetworkUtil;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,8 +47,18 @@ public class DownloadService extends Service {
     private DBController mDBController;
 
     private NetInfoReceiver mNetInfoReceiver;
+    private Handler mHandler = new DownloadHandler(new WeakReference<>(this));
 
-    private Handler mHandler = new Handler() {
+    private static class DownloadHandler extends Handler {
+
+        WeakReference<DownloadService> reference;
+        DownloadService service;
+
+        public DownloadHandler(WeakReference<DownloadService> reference) {
+            this.reference = reference;
+            service = reference.get();
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -57,13 +68,14 @@ public class DownloadService extends Service {
                 case NOTIFY_COMPLETED:
                 case NOTIFY_ERROR:
                     entry.downloadSpeed = 0;
-                    checkNext(entry);
+                    service.checkNext(entry);
                     break;
 
             }
-            mDownloadChanger.postStatus(entry);
+            service.mDownloadChanger.postStatus(entry);
         }
-    };
+    }
+
 
     private void checkNext(DownloadEntry entry) {
         mDownloadingTasks.remove(entry.id);
@@ -130,6 +142,7 @@ public class DownloadService extends Service {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mNetInfoReceiver);
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     @Override

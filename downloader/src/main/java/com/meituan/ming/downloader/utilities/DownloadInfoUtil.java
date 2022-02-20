@@ -35,7 +35,7 @@ public class DownloadInfoUtil {
     }
 
 
-    public static int getDownlaodPercent(DownloadEntry entry) {
+    public static int getDownloadPercent(DownloadEntry entry) {
         int percent;
         if (entry.totalLength > 0) {
             percent = (int) (entry.currentLength * 100l / entry.totalLength);
